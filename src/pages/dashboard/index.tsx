@@ -14,18 +14,17 @@ import { useEffect } from "react";
 import ResponsesModal from "@/pages/dashboard/ResponsesModal";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { logger } from "@/lib/logger";
+import { Project, Workspace } from "@prisma/client";
+import Button from "@/components/ui/Button";
 
 type Props = {
-  forms: FormWithFill[];
+  workspaces: Workspace[];
+  projects: Project[];
   welcomed: boolean;
 };
 
-export default function Dashboard({ forms, welcomed }: Props) {
+export default function Dashboard({ workspaces, projects, welcomed }: Props) {
   const router = useRouter();
-
-  useEffect(() => {
-    dashboardStore.load(forms);
-  }, [forms]);
 
   useEffect(() => {
     if (!welcomed) {
@@ -49,23 +48,16 @@ export default function Dashboard({ forms, welcomed }: Props) {
   return (
     <Layout>
       <Head>
-        <title>Dashboard</title>
+        <title>My Stuff</title>
       </Head>
       <div className="p-4 w-full max-w-4xl mx-auto">
         <div className="flex items-center justify-between">
-          <h1 className="font-bold text-xl my-4">Dashboard</h1>
-          <button
-            className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-800"
-            onClick={newForm}
-          >
-            New Request Form
-          </button>
+          <h1 className="font-bold text-2xl my-4">My Stuff</h1>
+          <Button onClick={newForm}>New Issue</Button>
         </div>
-        <div className="">Welcome to DocGet.</div>
-
-        <div className="mt-8">
+        <div>
           <div className="flex items-center">
-            <h2 className="font-bold text-lg">Your Forms</h2>
+            <h2 className="font-bold text-lg">In Progress</h2>
             <div
               className="ml-4 p-1 hover:bg-gray-100 rounded-md cursor-pointer"
               onClick={refresh}
@@ -75,7 +67,7 @@ export default function Dashboard({ forms, welcomed }: Props) {
               <ArrowPathIcon className="w-4 h-4" />
             </div>
           </div>
-          <FormTable />
+          {/* <FormTable /> */}
         </div>
       </div>
       <DeleteFormModal />
@@ -88,29 +80,33 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   if (isRedirect(session)) return session;
 
   const userId = session.user.id;
-  const forms = await prisma.form.findMany({
+
+  const workspaces = await prisma.workspace.findMany({
     where: {
-      name: {
-        not: "",
-      },
-      formOwners: {
+      users: {
         some: {
           userId,
         },
       },
+    },
+  });
+
+  const projects = await prisma.project.findMany({
+    where: {
+      workspace: {
+        id: {
+          in: workspaces.map((w) => w.id),
+        },
+      },
+      archivedAt: null,
       deletedAt: null,
-    },
-    include: {
-      formFills: true,
-    },
-    orderBy: {
-      updatedAt: "desc",
     },
   });
 
   return {
     props: {
-      forms: forms.map(serialize),
+      workspaces: workspaces.map(serialize),
+      projects: projects.map(serialize),
       welcomed: !!session.dbUser.welcomedAt,
     } as Props,
   };

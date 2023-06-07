@@ -6,20 +6,18 @@ import Link from "next/link";
 import Layout from "@/components/layout/Layout";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { AuthLayout } from "@/components/layout/AuthLayout";
+import Button, { ButtonLink } from "@/components/ui/Button";
 
 export default function IndexPage() {
   return (
     <AuthLayout>
       <Head>
-        <title>DocGet</title>
+        <title>Rhea</title>
       </Head>
-      <p>Welcome to DocGet. Please sign in to continue.</p>
-      <Link
-        href="/api/auth/signin"
-        className="my-4 py-2 px-4 rounded-md bg-blue-600 text-white inline-block hover:bg-blue-800"
-      >
+      <p>Welcome! Please sign in to continue.</p>
+      <ButtonLink href="/api/auth/signin" className="my-4">
         Sign in
-      </Link>
+      </ButtonLink>
     </AuthLayout>
   );
 }
