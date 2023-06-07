@@ -17,9 +17,11 @@ model Workspace {
   id        String          @id @default(cuid())
   name      String
   users     WorkspaceUser[]
-  folders   Folder[]
+  projects  Project[]
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
+
+  @@map("workspaces")
 }
 
 model WorkspaceUser {
@@ -33,193 +35,160 @@ model WorkspaceUser {
   deletedAt   DateTime?
 
   @@id([userId, workspaceId])
+  @@map("workspace_users")
 }
 
-model Folder {
+model Project {
+  id           String        @id @default(cuid())
+  remoteId     String?
+  name         String
+  shortcode    String        @db.Char(6)
+  color        String        @db.Char(6)
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
+  workspaceId  String
+  meta         Json?
+  issues       Issue[]
+  fields       IssueField[]
+  states       IssueState[]
+  types        IssueType[]
+  integrations Integration[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  archivedAt   DateTime?
+  deletedAt    DateTime?
+
+  @@map("projects")
+}
+
+model IssueType {
   id          String    @id @default(cuid())
   name        String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  workspaceId String
-  parent      Folder?   @relation("FolderParent", fields: [parentId], references: [id])
-  parentId    String?
-  children    Folder[]  @relation("FolderParent")
-  privateTo   String?
-  forms       Form[]
+  description String?
+  type        String    @db.Char(20)
+  meta        Json?
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
+
+  @@map("issue_types")
 }
 
-// --- forms
+model IssueState {
+  id          String    @id @default(cuid())
+  name        String    @db.Char(30)
+  description String?
+  type        String    @db.Char(20)
+  meta        Json?
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
-model Form {
-  id          String         @id @default(cuid())
+  @@map("issue_states")
+}
+
+model IssueField {
+  id          String    @id @default(cuid())
   name        String
   description String?
-  options     Json           @default("{}")
-  slug        String?        @unique
-  folderId    String?
-  folder      Folder?        @relation(fields: [folderId], references: [id])
-  formOwners  FormOwner[]
-  questions   Question[]
-  formFills   FormFill[]
-  contents    FormContents[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  type        String    @db.Char(20)
+  meta        Json?
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
-  completedAt DateTime?
-  sentAt      DateTime?
+
+  @@map("issue_fields")
 }
 
-model FormContents {
-  id        String     @id @default(cuid())
-  formId    String
-  form      Form       @relation(fields: [formId], references: [id])
-  editorId  String
-  editor    User       @relation(fields: [editorId], references: [id])
-  data      Json       @default("{}")
-  version   Int        @default(0)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  formFills FormFill[]
+model Integration {
+  id           String    @id @default(cuid())
+  name         String
+  accessToken  String?
+  refreshToken String?
+  meta         Json?
+  projectId    String?
+  project      Project?  @relation(fields: [projectId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  @@map("integrations")
 }
 
-model FormOwner {
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-  formId String
-  form   Form   @relation(fields: [formId], references: [id])
+// --- issues
 
-  @@id([userId, formId])
-}
+model Issue {
+  id          String  @id @default(cuid())
+  remoteId    String?
+  title       String
+  description Json?
+  type        String  @db.Char(20)
+  number      Int
+  state       String  @db.Char(30)
 
-model Question {
-  id               String            @id @default(cuid())
-  order            Int
-  type             String
-  title            String
-  subtitle         String?
-  options          String?
-  displayLogic     String?
-  validationLogic  String?
-  required         Boolean           @default(true)
-  formId           String
-  meta             Json?
-  form             Form              @relation(fields: [formId], references: [id])
-  parentId         String?
-  parent           Question?         @relation("QuestionParent", fields: [parentId], references: [id])
-  children         Question[]        @relation("QuestionParent")
-  questionComments QuestionComment[]
-  answers          Answer[]
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  deletedAt        DateTime?
-}
+  fields      Json?
+  meta        Json?
+  projectId   String?
+  project     Project?       @relation(fields: [projectId], references: [id])
+  parentId    String?
+  parent      Issue?         @relation("issue_parent", fields: [parentId], references: [id])
+  children    Issue[]        @relation("issue_parent")
+  assigneeId  String?
+  assignee    User?          @relation("issue_assignee", fields: [assigneeId], references: [id])
+  creatorId   String?
+  creator     User?          @relation("issue_creator", fields: [creatorId], references: [id])
+  comments    IssueComment[]
+  attachments Attachment[]
+  followers   User[]         @relation("issue_followers")
 
-model QuestionComment {
-  id         String    @id @default(cuid())
-  privateTo  String?
-  type       String
-  message    String
-  userId     String?
-  user       User?     @relation(fields: [userId], references: [id])
-  questionId String
-  question   Question  @relation(fields: [questionId], references: [id])
   createdAt  DateTime  @default(now())
-  editedAt   DateTime?
+  updatedAt  DateTime  @updatedAt
+  dueAt      DateTime?
+  deletedAt  DateTime?
+  startedAt  DateTime?
   resolvedAt DateTime?
-  deletedAt  DateTime?
+  archivedAt DateTime?
+
+  @@index([projectId, number]) // search for issues by name
+  @@index([projectId, state]) // search by state
+  @@index([projectId, resolvedAt]) // search by resolution
+  @@map("issues")
 }
 
-// --- fills and answers
+model IssueComment {
+  id        String    @id @default(cuid())
+  type      String
+  message   String
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+  issueId   String
+  issue     Issue     @relation(fields: [issueId], references: [id])
+  createdAt DateTime  @default(now())
+  editedAt  DateTime?
+  deletedAt DateTime?
 
-model FormFill {
-  id              String         @id @default(cuid())
-  completed       Float
-  userId          String
-  user            User           @relation(fields: [userId], references: [id])
-  formId          String
-  form            Form           @relation(fields: [formId], references: [id])
-  formContentsId  String?
-  formContents    FormContents?  @relation(fields: [formContentsId], references: [id])
-  answers         Answer[]
-  fillDelegations FillDelegate[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  deletedAt       DateTime?
-  startedAt       DateTime?
-  dueAt           DateTime?
-  submittedAt     DateTime?
-  Upload          Upload[]
-
-  @@unique([userId, formId])
+  @@map("issue_comments")
 }
 
-model FillDelegate {
-  id         String    @id @default(cuid())
-  creatorId  String
-  creator    User      @relation("creator", fields: [creatorId], references: [id])
-  assigneeId String
-  assignee   User      @relation("assignee", fields: [assigneeId], references: [id])
-  formFillId String
-  formFill   FormFill  @relation(fields: [formFillId], references: [id])
-  createdAt  DateTime  @default(now())
-  deletedAt  DateTime?
-}
-
-model Answer {
-  id              String          @id @default(cuid())
-  value           String
-  formFillId      String
-  formFill        FormFill        @relation(fields: [formFillId], references: [id])
-  userId          String
-  user            User            @relation(fields: [userId], references: [id])
-  questionId      String
-  question        Question        @relation(fields: [questionId], references: [id])
-  answerHistories AnswerHistory[]
-  uploads         Upload[]
-  answerComments  AnswerComment[]
-  createdAt       DateTime        @default(now())
-  submittedAt     DateTime?
-}
-
-model AnswerHistory {
-  id        String   @id @default(cuid())
-  value     String
-  answerId  String
-  answer    Answer   @relation(fields: [answerId], references: [id])
+model Attachment {
+  id        String    @id @default(cuid())
+  name      String
+  size      Float
+  type      String
+  path      String
+  issueId   String
+  issue     Issue     @relation(fields: [issueId], references: [id])
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-}
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 
-model Upload {
-  id         String   @id @default(cuid())
-  name       String
-  size       Float
-  type       String
-  path       String
-  formFillId String
-  formFill   FormFill @relation(fields: [formFillId], references: [id])
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  answerId   String
-  answer     Answer   @relation(fields: [answerId], references: [id])
-  createdAt  DateTime @default(now())
-}
-
-model AnswerComment {
-  id         String    @id @default(cuid())
-  privateTo  String?
-  type       String
-  message    String
-  userId     String?
-  user       User?     @relation(fields: [userId], references: [id])
-  answerId   String
-  answer     Answer    @relation(fields: [answerId], references: [id])
-  createdAt  DateTime  @default(now())
-  resolvedAt DateTime?
-  deletedAt  DateTime?
+  @@map("attachments")
 }
 
 // --- auth
@@ -237,22 +206,14 @@ model User {
   welcomedAt    DateTime?
   meta          Json      @default("{}")
 
-  // fields for form creator
-  workspaces   WorkspaceUser[]
-  formOwner    FormOwner[]
-  formContents FormContents[]
+  workspaces     WorkspaceUser[]
+  issuesCreated  Issue[]         @relation("issue_creator")
+  issuesAssigned Issue[]         @relation("issue_assignee")
+  issuesFollowed Issue[]         @relation("issue_followers")
+  issueComments  IssueComment[]
+  attachments    Attachment[]
 
-  // fields for form filler
-  formFills       FormFill[]
-  answers         Answer[]
-  answerHistories AnswerHistory[]
-  delegatedTo     FillDelegate[]  @relation("creator")
-  delegations     FillDelegate[]  @relation("assignee")
-  Upload          Upload[]
-
-  // fields for both
-  questionComments QuestionComment[]
-  AnswerComment    AnswerComment[]
+  @@map("users")
 }
 
 model Account {
@@ -272,6 +233,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
@@ -280,6 +242,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
 model VerificationToken {
@@ -288,4 +252,5 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map("verification_tokens")
 }
