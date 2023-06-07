@@ -1,0 +1,158 @@
+/* Basic editor styles */
+.ProseMirror,
+.ProseMirror-focused {
+  @apply shadow-none ring-0 border-0 outline-none;
+}
+
+.doc .ProseMirror {
+  height: 100%;
+  margin-bottom: 200px;
+}
+
+.mini .ProseMirror {
+  min-height: 13rem;
+}
+
+.ProseMirror {
+  margin-bottom: 20px;
+  line-height: 170%;
+  word-break: break-word;
+  min-width: 300px;
+
+  @media print {
+    margin-bottom: 0;
+    height: auto;
+  }
+
+  p.is-empty::before {
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  ul,
+  ol {
+    padding: 0 1rem;
+    list-style: revert;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
+  h2 {
+    font-size: 1.5em;
+  }
+  h3 {
+    font-size: 1.17em;
+  }
+  h4 {
+    font-size: 1em;
+  }
+  h5 {
+    font-size: 0.83em;
+  }
+  h6 {
+    font-size: 0.67em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    line-height: 1.4;
+    font-weight: bold;
+  }
+
+  code {
+    background-color: rgba(#616161, 0.1);
+    color: #616161;
+  }
+
+  pre {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: "JetBrainsMono", monospace;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+
+    code {
+      color: inherit;
+      padding: 0;
+      background: none;
+      font-size: 0.8rem;
+    }
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  blockquote {
+    padding-left: 1rem;
+    border-left: 2px solid #adadad;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #adadad;
+    margin: 1rem 0;
+  }
+
+  a {
+    color: #46a3e7;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+.menubar {
+  user-select: none;
+  /* safari ios hack */
+  transform: translate3d(0, 0, 0);
+}
+
+.menubar button {
+  height: 35px;
+  min-width: 30px;
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid #ccc;
+  margin: 0 4px 4px 0;
+}
+
+.menubar button.is-active {
+  background: #111;
+  color: white;
+}
+
+/* Give a remote user a caret */
+.collaboration-cursor__caret {
+  border-left: 1px solid #0d0d0d;
+  border-right: 1px solid #0d0d0d;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+/* Render the username above the caret */
+.collaboration-cursor__label {
+  border-radius: 3px 3px 3px 0;
+  color: #0d0d0d;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  left: -1px;
+  line-height: normal;
+  padding: 0.1rem 0.3rem;
+  position: absolute;
+  top: -1.4em;
+  user-select: none;
+  white-space: nowrap;
+}

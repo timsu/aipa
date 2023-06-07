@@ -1,0 +1,291 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- workspaces
+
+model Workspace {
+  id        String          @id @default(cuid())
+  name      String
+  users     WorkspaceUser[]
+  folders   Folder[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model WorkspaceUser {
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+  role        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@id([userId, workspaceId])
+}
+
+model Folder {
+  id          String    @id @default(cuid())
+  name        String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+  parent      Folder?   @relation("FolderParent", fields: [parentId], references: [id])
+  parentId    String?
+  children    Folder[]  @relation("FolderParent")
+  privateTo   String?
+  forms       Form[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+// --- forms
+
+model Form {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  options     Json           @default("{}")
+  slug        String?        @unique
+  folderId    String?
+  folder      Folder?        @relation(fields: [folderId], references: [id])
+  formOwners  FormOwner[]
+  questions   Question[]
+  formFills   FormFill[]
+  contents    FormContents[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?
+  completedAt DateTime?
+  sentAt      DateTime?
+}
+
+model FormContents {
+  id        String     @id @default(cuid())
+  formId    String
+  form      Form       @relation(fields: [formId], references: [id])
+  editorId  String
+  editor    User       @relation(fields: [editorId], references: [id])
+  data      Json       @default("{}")
+  version   Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  formFills FormFill[]
+}
+
+model FormOwner {
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  formId String
+  form   Form   @relation(fields: [formId], references: [id])
+
+  @@id([userId, formId])
+}
+
+model Question {
+  id               String            @id @default(cuid())
+  order            Int
+  type             String
+  title            String
+  subtitle         String?
+  options          String?
+  displayLogic     String?
+  validationLogic  String?
+  required         Boolean           @default(true)
+  formId           String
+  meta             Json?
+  form             Form              @relation(fields: [formId], references: [id])
+  parentId         String?
+  parent           Question?         @relation("QuestionParent", fields: [parentId], references: [id])
+  children         Question[]        @relation("QuestionParent")
+  questionComments QuestionComment[]
+  answers          Answer[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deletedAt        DateTime?
+}
+
+model QuestionComment {
+  id         String    @id @default(cuid())
+  privateTo  String?
+  type       String
+  message    String
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id])
+  questionId String
+  question   Question  @relation(fields: [questionId], references: [id])
+  createdAt  DateTime  @default(now())
+  editedAt   DateTime?
+  resolvedAt DateTime?
+  deletedAt  DateTime?
+}
+
+// --- fills and answers
+
+model FormFill {
+  id              String         @id @default(cuid())
+  completed       Float
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  formId          String
+  form            Form           @relation(fields: [formId], references: [id])
+  formContentsId  String?
+  formContents    FormContents?  @relation(fields: [formContentsId], references: [id])
+  answers         Answer[]
+  fillDelegations FillDelegate[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+  startedAt       DateTime?
+  dueAt           DateTime?
+  submittedAt     DateTime?
+  Upload          Upload[]
+
+  @@unique([userId, formId])
+}
+
+model FillDelegate {
+  id         String    @id @default(cuid())
+  creatorId  String
+  creator    User      @relation("creator", fields: [creatorId], references: [id])
+  assigneeId String
+  assignee   User      @relation("assignee", fields: [assigneeId], references: [id])
+  formFillId String
+  formFill   FormFill  @relation(fields: [formFillId], references: [id])
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
+}
+
+model Answer {
+  id              String          @id @default(cuid())
+  value           String
+  formFillId      String
+  formFill        FormFill        @relation(fields: [formFillId], references: [id])
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  questionId      String
+  question        Question        @relation(fields: [questionId], references: [id])
+  answerHistories AnswerHistory[]
+  uploads         Upload[]
+  answerComments  AnswerComment[]
+  createdAt       DateTime        @default(now())
+  submittedAt     DateTime?
+}
+
+model AnswerHistory {
+  id        String   @id @default(cuid())
+  value     String
+  answerId  String
+  answer    Answer   @relation(fields: [answerId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Upload {
+  id         String   @id @default(cuid())
+  name       String
+  size       Float
+  type       String
+  path       String
+  formFillId String
+  formFill   FormFill @relation(fields: [formFillId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  answerId   String
+  answer     Answer   @relation(fields: [answerId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model AnswerComment {
+  id         String    @id @default(cuid())
+  privateTo  String?
+  type       String
+  message    String
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id])
+  answerId   String
+  answer     Answer    @relation(fields: [answerId], references: [id])
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+  deletedAt  DateTime?
+}
+
+// --- auth
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  welcomedAt    DateTime?
+  meta          Json      @default("{}")
+
+  // fields for form creator
+  workspaces   WorkspaceUser[]
+  formOwner    FormOwner[]
+  formContents FormContents[]
+
+  // fields for form filler
+  formFills       FormFill[]
+  answers         Answer[]
+  answerHistories AnswerHistory[]
+  delegatedTo     FillDelegate[]  @relation("creator")
+  delegations     FillDelegate[]  @relation("assignee")
+  Upload          Upload[]
+
+  // fields for both
+  questionComments QuestionComment[]
+  AnswerComment    AnswerComment[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

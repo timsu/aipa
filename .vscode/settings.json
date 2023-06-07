@@ -1,0 +1,16 @@
+{
+  "[embedded-typescript]": {
+    "editor.wordWrap": "on"
+  },
+  "importSorter.importStringConfiguration.quoteMark": "double",
+  "importSorter.importStringConfiguration.hasSemicolon": true,
+  "files.associations": {
+    "*.css": "postcss"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.tabSize": 2
+}

@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#__next,
+main {
+  height: 100%;
+}
+
+textarea:focus,
+input:focus {
+  outline: none;
+}
+
+.arrow,
+.arrow::before {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+}
+
+.arrow {
+  visibility: hidden;
+}
+
+.arrow::before {
+  visibility: visible;
+  content: "";
+  transform: rotate(45deg);
+}
+
+@import "./editor-styles.css";

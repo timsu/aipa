@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "csstools.postcss",
+        "mike-co.import-sorter",
+        "prisma.prisma",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "dbaeumer.vscode-eslint"
+    ]
+}

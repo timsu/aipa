@@ -1,0 +1,12 @@
+version: "3"
+services:
+  app:
+    image: gcr.io/docget/docget-app
+    build:
+      context: ./
+      platforms:
+        - "linux/amd64"
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
