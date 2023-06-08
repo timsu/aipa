@@ -14,6 +14,8 @@ import { WorkspaceProps } from "@/types";
 import { loadWorkspaceData } from "@/server/loaders";
 import { useUI } from "@/stores/uiStore";
 import PageLayout from "@/components/layout/PageLayout";
+import { issueStore } from "@/stores/issueStore";
+import { useStore } from "@nanostores/react";
 
 type Props = {
   welcomed: boolean;
@@ -31,18 +33,20 @@ export default function Dashboard({ welcomed, ...props }: Props) {
   }, [welcomed]);
 
   const newIssue = async () => {
-    // create request and get id
-    // const form = await API.createForm();
-    // const formId = form.id;
-    // // redirect to request page via next routing
-    // router.push(`/forms/${formId}`);
+    issueStore.newIssue();
   };
 
   const refresh = () => {
     router.replace(router.asPath);
   };
 
-  const headerButton = <Button onClick={newIssue}>New Issue</Button>;
+  const activeIssue = useStore(issueStore.activeIssue);
+
+  const headerButton = (
+    <Button onClick={newIssue} disabled={activeIssue == "new"}>
+      New Issue
+    </Button>
+  );
 
   return (
     <Layout>

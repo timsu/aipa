@@ -1,4 +1,4 @@
-import EmailBase, { BlueButton, BodyText, HeadingText, baseUrl } from "./EmailBase";
+import EmailBase, { BlueButton, BodyText, EmailFooter, HeadingText, baseUrl } from "./EmailBase";
 import { generateGreeting } from "./utils";
 
 type Props = {
@@ -19,8 +19,7 @@ export default function ResponseReceived({
         {fromUser} just responded to your <b>{title}</b> request.
       </BodyText>
       <BlueButton href={baseUrl + path}>View response</BlueButton>
-      <BodyText>Cheers,</BodyText>
-      <BodyText>The DocGet Team</BodyText>
+      <EmailFooter />
     </EmailBase>
   );
 }

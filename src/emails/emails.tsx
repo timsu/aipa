@@ -6,12 +6,13 @@ import ResponseReceived from "@/ResponseReceived";
 import { logger } from "@/lib/logger";
 import VerifyEmail from "@/VerifyEmail";
 import FirstFormEmail from "@/FirstFormEmail";
+import { PRODUCT } from "@/types";
 
 const TAG = "[emails]";
 
 class Emails {
   fromEmail = process.env.EMAIL_FROM;
-  defaultName = process.env.NODE_ENV == "development" ? "DocGet (dev)" : "DocGet";
+  defaultName = process.env.NODE_ENV == "development" ? `${PRODUCT} (dev)` : PRODUCT;
 
   formatFrom = (from: string) => {
     return `${from} <${this.fromEmail}>`;
@@ -25,7 +26,7 @@ class Emails {
     await sendEmail({
       to: email,
       from: this.defaultFrom,
-      subject: "Welcome to DocGet",
+      subject: "Welcome to " + PRODUCT,
       html: render(WelcomeEmail()),
     });
   }
@@ -47,7 +48,7 @@ class Emails {
     await sendEmail({
       to: email,
       from: this.defaultFrom,
-      subject: "Sign in to DocGet",
+      subject: "Sign in to " + PRODUCT,
       html: render(VerifyEmail({ url })),
     });
   }

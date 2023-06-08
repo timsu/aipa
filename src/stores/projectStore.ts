@@ -13,6 +13,7 @@ class ProjectStore {
 
   init = async (projects: Project[]) => {
     this.projects.set(projects);
+    this.activeProject.set(projects[0] || null);
   };
 }
 

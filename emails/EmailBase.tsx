@@ -8,6 +8,7 @@ import { Tailwind } from "@react-email/tailwind";
 import { Head } from "@react-email/head";
 import { PropsWithChildren } from "react";
 import { Img } from "@react-email/img";
+import { PRODUCT } from "@/types";
 
 export const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
@@ -46,5 +47,14 @@ export function BlueButton({ children, href }: PropsWithChildren<{ href: string 
     <Button className="bg-blue-600 hover:bg-blue-800 text-white py-2 px-4 rounded" href={href}>
       {children}
     </Button>
+  );
+}
+
+export function EmailFooter() {
+  return (
+    <>
+      <BodyText>Cheers,</BodyText>
+      <BodyText>The {PRODUCT} Team</BodyText>
+    </>
   );
 }

@@ -1,5 +1,9 @@
+import { issueStore } from "@/stores/issueStore";
+import { useStore } from "@nanostores/react";
+import Head from "next/head";
 import { ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
+import IssuePanel from "../issues/IssuePanel";
 
 export default function PageLayout({
   children,
@@ -14,13 +18,22 @@ export default function PageLayout({
   fullSize?: boolean;
   className?: string;
 }) {
+  const activeIssue = useStore(issueStore.activeIssue);
   return (
-    <div className={twMerge("px-4 sm:px-6 lg:px-8 w-full", fullSize ? "" : "max-w-4xl", className)}>
-      <div className="flex items-center justify-between">
-        <h1 className="font-bold text-2xl my-4">{title}</h1>
-        {titleButtons}
+    <>
+      <Head>
+        <title>{title}</title>
+      </Head>
+      <div
+        className={twMerge("px-4 sm:px-6 lg:px-8 flex-1", fullSize ? "" : "max-w-4xl", className)}
+      >
+        <div className="flex items-center justify-between">
+          <h1 className="font-bold text-2xl my-4">{title}</h1>
+          {titleButtons}
+        </div>
+        <div>{children}</div>
       </div>
-      <div>{children}</div>
-    </div>
+      {activeIssue && <IssuePanel />}
+    </>
   );
 }

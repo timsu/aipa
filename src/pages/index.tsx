@@ -5,12 +5,13 @@ import Head from "next/head";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { ButtonLink } from "@/components/ui/Button";
+import { PRODUCT } from "@/types";
 
 export default function IndexPage() {
   return (
     <AuthLayout>
       <Head>
-        <title>Rhea</title>
+        <title>{PRODUCT}</title>
       </Head>
       <p>Welcome! Please sign in to continue.</p>
       <ButtonLink href="/api/auth/signin" className="my-4">

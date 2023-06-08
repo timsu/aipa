@@ -17,33 +17,15 @@ import { loadWorkspaceData } from "@/server/loaders";
 import { ProjectVisibility, WorkspaceProps } from "@/types";
 import { useUI } from "@/stores/uiStore";
 import { workspaceStore } from "@/stores/workspaceStore";
+import ColorPicker, { randomColor } from "@/components/projects/ColorPicker";
 
 type Props = WorkspaceProps;
-
-const COLOR_OPTIONS = [
-  "e0953f",
-  "d34a2d",
-  "c4272e",
-  "c7295f",
-  "ce00f1",
-  "4a5ed4",
-  "6275f6",
-  "64a9f8",
-  "6ebed7",
-  "589686",
-  "67b057",
-  "5e9a3b",
-  "696773",
-  "212121",
-];
 
 export default function NewProject(props: Props) {
   const { workspaces, projects } = props;
   const [name, _setName] = useState("");
   const [code, setCode] = useState("");
-  const [color, setColor] = useState(
-    COLOR_OPTIONS[Math.floor(Math.random() * COLOR_OPTIONS.length)]
-  );
+  const [color, setColor] = useState(randomColor());
 
   const setName = (name: string) => {
     _setName(name);
@@ -127,19 +109,7 @@ export default function NewProject(props: Props) {
             onChange={(e) => setCode(e.target.value)}
           />
           <div>Color theme:</div>
-          <div className="flex flex-wrap gap-2 items-center">
-            {COLOR_OPTIONS.map((c) => (
-              <div
-                key={c}
-                onClick={() => setColor(c)}
-                className={`p-[1px] rounded-lg cursor-pointer border-2 ${
-                  c === color ? " border-black" : "border-transparent"
-                }`}
-              >
-                <div className="w-8 h-8 rounded-md" style={{ backgroundColor: `#${c}` }} />
-              </div>
-            ))}
-          </div>
+          <ColorPicker color={color} setColor={setColor} />
 
           <div className="mt-2">
             {error && <div className="text-red-500 mb-4">{error}</div>}

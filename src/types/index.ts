@@ -1,5 +1,7 @@
 import { Project, Workspace } from "@prisma/client";
 
+export const PRODUCT = "Pomme";
+
 export type Model = "3.5" | "4";
 
 export type ChatMessage = {
@@ -41,4 +43,21 @@ export enum ProjectVisibility {
   ALL = 0, // project appears in everyone's list by default
   MEMBERS = 1, // project only appears in members' lists but is joinable
   PRIVATE = 2, // project only appears in members' lists and is not joinable
+}
+
+export enum IssueState {
+  DRAFT = "draft",
+  BACKLOG = "backlog",
+  TODO = "todo",
+  IN_PROGRESS = "in_progress",
+  REVIEW = "review",
+  DONE = "done",
+  WONT_FIX = "wont_fix",
+}
+
+export enum IssueType {
+  STORY = "story",
+  TASK = "task",
+  BUG = "bug",
+  EXPRIMENT = "experiment",
 }

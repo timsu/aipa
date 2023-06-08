@@ -3,7 +3,7 @@ import { AnchorHTMLAttributes, ButtonHTMLAttributes, PropsWithChildren } from "r
 import { twMerge } from "tailwind-merge";
 
 export const BASE_BUTTON_CLASS =
-  "bg-brand-500 text-white py-2 px-4 rounded-md hover:bg-brand-700 cursor-pointer";
+  "bg-brand-500 disabled:bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-brand-700 cursor-pointer";
 
 export default function Button({
   children,
