@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/prisma";
 import { Session, getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { UserMeta } from "@/types";
-import { authApiWrapper } from "@/lib/apiWrapper";
+import { authApiWrapper } from "@/server/apiWrapper";
 
 export default authApiWrapper<UserMeta>(async function handler(
   req: NextApiRequest,

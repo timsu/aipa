@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import Layout from "@/components/layout/Layout";
-import prisma, { serialize } from "@/lib/prisma";
+import prisma, { serialize } from "@/server/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 import FormEditor from "@/components/forms/FormEditor";
 import { editFormStore } from "@/stores/editFormStore";

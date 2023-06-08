@@ -4,27 +4,23 @@ import { useRouter } from "next/router";
 
 import Layout from "@/components/layout/Layout";
 import API from "@/client/api";
-import prisma, { serialize } from "@/lib/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 
-import FormTable from "@/pages/dashboard/FormTable";
-import DeleteFormModal from "@/pages/dashboard/DeleteFormModal";
-import { FormWithFill, dashboardStore } from "@/stores/dashboardStore";
 import { useEffect } from "react";
-import ResponsesModal from "@/pages/dashboard/ResponsesModal";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { logger } from "@/lib/logger";
-import { Project, Workspace } from "@prisma/client";
 import Button from "@/components/ui/Button";
+import { WorkspaceProps } from "@/types";
+import { loadWorkspaceData } from "@/server/loaders";
+import { useUI } from "@/stores/uiStore";
 
 type Props = {
-  workspaces: Workspace[];
-  projects: Project[];
   welcomed: boolean;
-};
+} & WorkspaceProps;
 
-export default function Dashboard({ workspaces, projects, welcomed }: Props) {
+export default function Dashboard({ welcomed, ...props }: Props) {
   const router = useRouter();
+  useUI(props);
 
   useEffect(() => {
     if (!welcomed) {
@@ -70,8 +66,6 @@ export default function Dashboard({ workspaces, projects, welcomed }: Props) {
           {/* <FormTable /> */}
         </div>
       </div>
-      <DeleteFormModal />
-      <ResponsesModal />
     </Layout>
   );
 }
@@ -79,17 +73,7 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   const session = await sessionOrRedirect(context);
   if (isRedirect(session)) return session;
 
-  const userId = session.user.id;
-
-  const workspaces = await prisma.workspace.findMany({
-    where: {
-      users: {
-        some: {
-          userId,
-        },
-      },
-    },
-  });
+  const { workspaces, activeWorkspace, projects } = await loadWorkspaceData(session);
 
   if (workspaces.length == 0) {
     return {
@@ -100,22 +84,11 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     };
   }
 
-  const projects = await prisma.project.findMany({
-    where: {
-      workspace: {
-        id: {
-          in: workspaces.map((w) => w.id),
-        },
-      },
-      archivedAt: null,
-      deletedAt: null,
-    },
-  });
-
   return {
     props: {
-      workspaces: workspaces.map(serialize),
-      projects: projects.map(serialize),
+      activeWorkspace,
+      workspaces,
+      projects,
       welcomed: !!session.dbUser.welcomedAt,
     } as Props,
   };

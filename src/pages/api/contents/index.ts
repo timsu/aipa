@@ -1,13 +1,13 @@
 import { getServerSession, Session } from "next-auth";
 
-import prisma from "@/lib/prisma";
-import { tracker } from "@/lib/tracker";
+import prisma from "@/server/prisma";
+import { tracker } from "@/server/tracker";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { assertFormOwner } from "@/pages/api/questions";
 import Prisma from "@prisma/client";
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { authApiWrapper } from "@/lib/apiWrapper";
+import { authApiWrapper } from "@/server/apiWrapper";
 
 export default authApiWrapper(async function handler(req: NextApiRequest, session: Session) {
   tracker.logEvent(session.user.email, "contents-save");

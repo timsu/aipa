@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 
 import Layout from "@/components/layout/Layout";
 import Submit, { SubmitResult } from "@/components/questions/Submit";
-import prisma, { serialize } from "@/lib/prisma";
+import prisma, { serialize } from "@/server/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 import Viewer from "@/components/forms/FormViewer";
 import { editFormStore } from "@/stores/editFormStore";

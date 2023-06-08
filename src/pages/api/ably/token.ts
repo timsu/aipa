@@ -4,7 +4,7 @@ import { Session, getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { ApiError, authApiWrapper } from "@/lib/apiWrapper";
+import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 
 export default authApiWrapper(async function (req: NextApiRequest, session: Session) {
   const ably = new Ably.Rest({ key: process.env.ABLY_READ_KEY });

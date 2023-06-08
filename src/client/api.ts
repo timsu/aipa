@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
 
 import { Issue, Project, User, Workspace } from "@prisma/client";
-import { SuccessResponse } from "./apiTypes";
+import { SuccessResponse } from "@/types";
 import { Resource, ResourceWithParent, SingleResource } from "./resource";
 
 class APIService {

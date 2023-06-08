@@ -2,7 +2,7 @@ import { GetServerSidePropsContext } from "next";
 import Head from "next/head";
 
 import Layout from "@/components/layout/Layout";
-import prisma, { serialize } from "@/lib/prisma";
+import prisma, { serialize } from "@/server/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 
 import { useState } from "react";
@@ -13,16 +13,18 @@ import TextField from "@/components/inputs/TextField";
 import API from "@/client/api";
 import useSubmitButton from "@/components/hooks/useSubmitButton";
 import { useRouter } from "next/router";
+import { loadWorkspaceData } from "@/server/loaders";
+import { WorkspaceProps } from "@/types";
+import { useUI } from "@/stores/uiStore";
 
-type Props = {
-  workspaces: Workspace[];
-};
+type Props = WorkspaceProps;
 
-export default function NewWorkspace({ workspaces }: Props) {
+export default function NewWorkspace(props: Props) {
+  const { workspaces } = props;
+
+  useUI(props);
   const [error, setError] = useState<string | null>(null);
-
   const { setSubmitting, SubmitButton } = useSubmitButton();
-
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -83,21 +85,9 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
   const session = await sessionOrRedirect(context);
   if (isRedirect(session)) return session;
 
-  const userId = session.user.id;
-
-  const workspaces = await prisma.workspace.findMany({
-    where: {
-      users: {
-        some: {
-          userId,
-        },
-      },
-    },
-  });
+  const props = await loadWorkspaceData(session);
 
   return {
-    props: {
-      workspaces: workspaces.map(serialize),
-    } as Props,
+    props: props as Props,
   };
 };

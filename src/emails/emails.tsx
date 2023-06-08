@@ -1,6 +1,6 @@
 import { render } from "@react-email/render";
 import WelcomeEmail from "../../emails/WelcomeEmail";
-import { sendEmail } from "@/lib/sendEmail";
+import { sendEmail } from "@/server/sendEmail";
 import SendForm from "@/SendForm";
 import ResponseReceived from "@/ResponseReceived";
 import { logger } from "@/lib/logger";

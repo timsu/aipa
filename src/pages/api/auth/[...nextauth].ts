@@ -3,7 +3,7 @@ import NextAuth, { getServerSession, NextAuthOptions, Session } from "next-auth"
 import EmailProvider from "next-auth/providers/email";
 import GoogleProvider from "next-auth/providers/google";
 
-import prisma from "@/lib/prisma";
+import prisma from "@/server/prisma";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import emails from "@/emails/emails";
 import CredentialsProvider from "next-auth/providers/credentials";

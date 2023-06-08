@@ -4,7 +4,7 @@ import { GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import { useEffect } from "react";
 
-import prisma, { serialize } from "@/lib/prisma";
+import prisma, { serialize } from "@/server/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 import { fillFormStore } from "@/stores/fillFormStore";
 

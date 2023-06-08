@@ -19,6 +19,10 @@ if (process.env.NODE_ENV != "development") {
 
 // needed for next.js server props
 export function serialize<T extends Object>(model: T): T {
+  if (Array.isArray(model)) {
+    return model.map((item) => serialize(item)) as any;
+  }
+
   const m = model as any;
   Object.keys(m).forEach((key) => {
     if (m[key] instanceof Date) {

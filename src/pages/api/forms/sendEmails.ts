@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/prisma";
 import { Session, getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import emails from "@/emails/emails";
 import jwt from "jsonwebtoken";
-import { createDueDate } from "@/lib/db";
+import { createDueDate } from "@/server/db";
 import { SuccessResponse } from "@/client/api";
-import { ApiError, authApiWrapper } from "@/lib/apiWrapper";
+import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 
 export default authApiWrapper(async function handler(req: NextApiRequest, session: Session) {
   const id = req.body.id as string;

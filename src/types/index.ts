@@ -1,3 +1,5 @@
+import { Project, Workspace } from "@prisma/client";
+
 export type Model = "3.5" | "4";
 
 export type ChatMessage = {
@@ -17,4 +19,20 @@ export type Member = {
   id: string;
   name: string;
   image?: string;
+};
+
+export type WorkspaceProps = {
+  activeWorkspace: string;
+  workspaces: Workspace[];
+  projects: Project[];
+};
+
+export type SuccessResponse = {
+  success: boolean;
+};
+
+export type ErrorResponse = {
+  error: {
+    message: string;
+  };
 };

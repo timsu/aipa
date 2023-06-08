@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import Submit from "@/components/questions/Submit";
-import prisma, { serialize } from "@/lib/prisma";
+import prisma, { serialize } from "@/server/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import LoginModal from "@/pages/r/LoginModal";
 import { fillFormStore } from "@/stores/fillFormStore";

@@ -1,11 +1,11 @@
 import { Session } from "next-auth";
 
-import prisma from "@/lib/prisma";
+import prisma from "@/server/prisma";
 
 import type { NextApiRequest } from "next";
 import { FormFill } from "@prisma/client";
-import { createDueDate } from "@/lib/db";
-import { ApiError, authApiWrapper } from "@/lib/apiWrapper";
+import { createDueDate } from "@/server/db";
+import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 
 export default authApiWrapper<FormFill>(function handler(req: NextApiRequest, session: Session) {
   if (req.method == "GET") {

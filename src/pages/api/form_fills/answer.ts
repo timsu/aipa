@@ -1,12 +1,12 @@
 import { Session, getServerSession } from "next-auth";
 
 import { FormFillWithData } from "@/client/api";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { Answer } from "@prisma/client";
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { authApiWrapper } from "@/lib/apiWrapper";
+import { authApiWrapper } from "@/server/apiWrapper";
 
 export default authApiWrapper<Answer>(async function handler(
   req: NextApiRequest,
