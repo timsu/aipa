@@ -1,15 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]";
 import emails from "@/emails/emails";
 import prisma from "@/server/prisma";
-import { SuccessResponse } from "@/client/api";
 import { Session } from "next-auth";
 import { authApiWrapper } from "@/server/apiWrapper";
 
 export default authApiWrapper(async function handler(req: NextApiRequest, session: Session) {
-  await emails.sendWelcome(session.dbUser.email as string);
-
+  // make sure database update succeeds before sending welcome email, else we risk sending multiple
   await prisma.user.update({
     where: {
       id: session.dbUser.id,
@@ -18,4 +14,6 @@ export default authApiWrapper(async function handler(req: NextApiRequest, sessio
       welcomedAt: new Date(),
     },
   });
+
+  await emails.sendWelcome(session.dbUser.email as string);
 });

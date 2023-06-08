@@ -24,7 +24,7 @@ export default function EmailBase({
       <Tailwind>
         <Section className="bg-white mx-auto my-auto font-sans">
           <Container className="max-w-2xl mx-auto py-12 px-4">
-            <Img src={logo} width="32" height="32" alt="DocGet" />
+            <Img src={logo} width="32" height="32" alt="Logo" />
             {children}
           </Container>
         </Section>

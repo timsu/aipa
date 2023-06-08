@@ -72,20 +72,24 @@ export default function NewProject(props: Props) {
       return;
     }
 
-    const visibility: ProjectVisibility =
-      projects.length >= 5 ? ProjectVisibility.MEMBERS : ProjectVisibility.ALL;
+    const visibility: ProjectVisibility = ProjectVisibility.ALL;
     const workspaceId = workspaceStore.activeWorkspace.get()?.id;
 
     try {
       setError(null);
       setSubmitting(true);
-      await API.projects.create({ name, shortcode: code, visibility, color, workspaceId });
-      router.push("/dashboard");
+      const project = await API.projects.create({
+        name,
+        shortcode: code,
+        visibility,
+        color,
+        workspaceId,
+      });
+      router.push("/projects/" + project.id + "/settings");
     } catch (err: any) {
+      setSubmitting(false);
       setError(err.message);
       return;
-    } finally {
-      setSubmitting(false);
     }
   };
 

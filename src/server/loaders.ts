@@ -52,28 +52,31 @@ export const loadWorkspaceData = async (
       })
     : [];
 
-  console.log(context.resolvedUrl);
   const redirect =
-    workspaces.length == 0 && !context.resolvedUrl.includes("/workspaces/new")
-      ? {
-          redirect: {
-            destination: "/workspaces/new",
-            permanent: false,
-          },
-        }
-      : projects.length == 0 && !context.resolvedUrl.includes("/projects/new")
-      ? {
-          redirect: {
-            destination: "/projects/new",
-            permanent: false,
-          },
-        }
+    workspaces.length == 0
+      ? context.resolvedUrl.includes("/workspaces/new")
+        ? null
+        : {
+            redirect: {
+              destination: "/workspaces/new",
+              permanent: false,
+            },
+          }
+      : projects.length == 0
+      ? context.resolvedUrl.includes("/projects/new")
+        ? null
+        : {
+            redirect: {
+              destination: "/projects/new",
+              permanent: false,
+            },
+          }
       : null;
 
   return {
     session,
     workspaces: serialize(workspaces),
-    activeWorkspace: activeWorkspace?.id,
+    activeWorkspace: activeWorkspace?.id || null,
     projects: serialize(projects),
     redirect,
   };

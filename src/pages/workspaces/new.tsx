@@ -20,6 +20,7 @@ import { useUI } from "@/stores/uiStore";
 type Props = WorkspaceProps;
 
 export default function NewWorkspace(props: Props) {
+  const [name, setName] = useState("");
   const { workspaces } = props;
 
   useUI(props);
@@ -29,9 +30,6 @@ export default function NewWorkspace(props: Props) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const name = (formData.get("name") as string).trim();
-
     if (!name) {
       return;
     }
@@ -46,10 +44,9 @@ export default function NewWorkspace(props: Props) {
       await API.workspaces.create({ name });
       router.push("/projects/new");
     } catch (err: any) {
+      setSubmitting(false);
       setError(err.message);
       return;
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -71,7 +68,13 @@ export default function NewWorkspace(props: Props) {
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col mt-4 gap-2">
           <div>Please name your workspace:</div>
-          <TextField name="name" placeholder="My Workspace" required />
+          <TextField
+            name="workspaceName"
+            placeholder="My Workspace"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
           <div className="mt-2">
             {error && <div className="text-red-500 mb-4">{error}</div>}
             <SubmitButton>Create Workspace</SubmitButton>
