@@ -28,6 +28,7 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
     // return all un-resolved issues assigned to me + drafts
     issues = await prisma.issue.findMany({
       where: {
+        deletedAt: null,
         OR: [
           { assigneeId: session.user.id, resolvedAt: null },
           {
@@ -44,6 +45,7 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
       where: {
         projectId,
         resolvedAt: null,
+        deletedAt: null,
         state: {
           not: IssueState.DRAFT,
         },

@@ -71,3 +71,9 @@ export enum IssueType {
   BUG = "bug",
   EXPRIMENT = "experiment",
 }
+
+export type IssueMessage = {
+  role: "user" | "assistant" | "system";
+  from?: string;
+  content: string;
+};

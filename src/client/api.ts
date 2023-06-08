@@ -1,15 +1,18 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
 
 import { Issue, Project, User, Workspace } from "@prisma/client";
-import { SuccessResponse } from "@/types";
+import { IssueType, IssueState, SuccessResponse, ChatMessage } from "@/types";
 import { Resource, ResourceWithParent, SingleResource } from "./resource";
 
 class APIService {
   axios: AxiosInstance;
 
+  endpoint: string;
+
   constructor() {
+    this.endpoint = "/api";
     const config: CreateAxiosDefaults = {
-      baseURL: (typeof window === "undefined" ? process.env.NEXTAUTH_URL : "") + "/api",
+      baseURL: this.endpoint,
     };
     this.axios = axios.create(config);
   }
@@ -46,8 +49,74 @@ class APIService {
     const response = await this.axios.get("/issues?" + queryString);
     return response.data;
   };
+
+  transitionIssue = async (
+    issue: Issue,
+    updates: { state?: IssueState; type?: IssueType },
+    onData: (data: ChatMessage | string) => void
+  ): Promise<void> => {
+    await this.stream(
+      `/issues/transition?id=${issue.id}&project_id=${issue.projectId}`,
+      updates,
+      onData
+    );
+  };
+
+  stream = (
+    url: string,
+    body: any,
+    onMessage: (message: ChatMessage | string) => void
+  ): Promise<void> => {
+    // use fetch since this use of axios doesn't support streaming
+    return new Promise<void>((resolve, reject) => {
+      fetch(this.endpoint + url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((response) => {
+          if (!response.body) reject(new Error("No response body"));
+
+          // Create a ReadableStream from the response body
+          const reader = response.body!.getReader();
+
+          // Define a function to read the stream
+          function readStream(): any {
+            return reader.read().then(({ done, value }) => {
+              if (done) {
+                resolve();
+                return;
+              }
+
+              try {
+                const text = new TextDecoder().decode(value);
+                const messages = parsePartialMessages(text);
+                messages.forEach((m) => onMessage(m));
+              } catch (error) {
+                reject(error);
+              }
+
+              // Continue reading the stream
+              return readStream();
+            });
+          }
+
+          // Start reading the stream
+          return readStream();
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  };
 }
 
 const API = new APIService();
 
 export default API;
+
+const parsePartialMessages = (text: string): (ChatMessage | string)[] => {
+  return JSON.parse("[" + (text.endsWith(",") ? text.slice(0, -1) : text) + "]");
+};

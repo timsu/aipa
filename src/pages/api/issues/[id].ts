@@ -9,6 +9,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 import { IssueState } from "@/types";
 import { getProject } from ".";
+import { ablySendIssueUpdate } from "@/server/ably";
 
 export default authApiWrapper<Issue>(async function handler(req: NextApiRequest, session: Session) {
   tracker.logEvent(session.user.email, "issue-edit", { keys: Object.keys(req.body) });
@@ -39,6 +40,7 @@ export default authApiWrapper<Issue>(async function handler(req: NextApiRequest,
       },
       data: updates,
     });
+    ablySendIssueUpdate(id, updates);
   }
 
   return result || item;

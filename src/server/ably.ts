@@ -1,3 +1,5 @@
+import { IssueMessage } from "@/types";
+import { Issue } from "@prisma/client";
 import Ably from "ably";
 
 let ably: Ably.Types.RealtimePromise | null = null;
@@ -7,22 +9,15 @@ export default function getAbly() {
   return ably;
 }
 
-// export const ablyPushDraftStatus = (request: DraftRequest) =>
-//   getAbly()
-//     .channels.get("repo:" + request.repositoryId)
-//     .publish("draft-status", {
-//       id: request.id,
-//       name: request.name,
-//       prUrl: request.prUrl,
-//       status: request.status,
-//     });
+export const ablySendIssueMessage = (id: string, message: IssueMessage) =>
+  getAbly()
+    .channels.get("issue:" + id)
+    .publish("message", message);
 
-// export const ablyPushLogLine = (id: string, line: string) =>
-//   getAbly()
-//     .channels.get("request:" + id)
-//     .publish("log", {
-//       line,
-//     });
+export const ablySendIssueUpdate = (id: string, updates: Partial<Issue>) =>
+  getAbly()
+    .channels.get("issue:" + id)
+    .publish("update", updates);
 
 // export const ablyPushRepoStatus = (repo: Repository) =>
 //   getAbly()

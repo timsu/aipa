@@ -66,41 +66,51 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     const issue = getIssueData();
     issue.state = IssueState.DRAFT;
     try {
+      let updatedIssue: Issue;
       if (savedIssue) {
-        await API.issues.update(savedIssue.parentId!, savedIssue.id, issue);
+        updatedIssue = await API.issues.update(savedIssue.projectId!, savedIssue.id, issue);
       } else {
-        const newIssue = await API.issues.create(project, issue);
-        setSavedIssue(newIssue);
+        updatedIssue = await API.issues.create(project, issue);
       }
       setSuccessMessage("Draft saved.");
+      setSavedIssue(updatedIssue);
+      return updatedIssue;
     } catch (e) {
       setError(unwrapError(e));
     } finally {
       setSubmitting(false);
     }
+    return false;
   };
 
   const createIssue = async () => {
     const issueData = getIssueData();
+    let issue: Issue | false | undefined = savedIssue;
     if (
       !savedIssue ||
       Object.keys(issueData).find(
         (key) => !deepEqual((savedIssue as any)[key], (issueData as any)[key])
       )
     ) {
-      console.log(
-        "need to draft",
-        Object.keys(issueData).find(
-          (key) => !deepEqual((savedIssue as any)[key], (issueData as any)[key])
-        ),
-        savedIssue,
-        issueData
-      );
-      await saveDraft();
+      issue = await saveDraft();
     }
-    // setSubmitting(true);
 
-    console.log("now we create", savedIssue);
+    if (!issue) return;
+
+    setSubmitting(true);
+    setSuccessMessage(null);
+    setError(null);
+    try {
+      const result = await API.transitionIssue(issue, { state: IssueState.BACKLOG }, (data) => {
+        console.log("data", data);
+      });
+      console.log("result", result);
+      setSuccessMessage("Finished.");
+    } catch (e) {
+      setError(unwrapError(e));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const router = useRouter();
@@ -139,7 +149,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
       </div>
 
       <form ref={formRef} className="mt-4 flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
-        <div className="flex flex-wrap justify-between items-center">
+        <div className="flex flex-wrap gap-4 items-center">
           <div>Issue Type:</div>
 
           {types.map((type) => (
@@ -199,8 +209,8 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
           )}
         </div>
 
-        {error && <div className="text-red-500">{error}</div>}
         {successMessage && <div className="text-green-500">{successMessage}</div>}
+        {error && <div className="text-red-500">{error}</div>}
       </form>
     </div>
   );

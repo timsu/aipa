@@ -17,6 +17,14 @@ export default function DashboardIssues() {
     IssueState.BACKLOG,
   ];
 
+  if (Object.keys(groupedIssues).length == 0) {
+    return (
+      <div className="">
+        Nothing on your plate! Create a new issue or assign something to yourself.
+      </div>
+    );
+  }
+
   return (
     <>
       {states.map((state) => {

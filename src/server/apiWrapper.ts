@@ -12,14 +12,15 @@ export class ApiError extends Error {
   }
 }
 
-export function apiWrapper<T>(func: (req: NextApiRequest, session: Session | null) => Promise<T>) {
-  return async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse<string | T | SuccessResponse>
-  ) {
+type ResponseType<T> = NextApiResponse<string | T | SuccessResponse>;
+
+export function apiWrapper<T>(
+  func: (req: NextApiRequest, session: Session | null, res: ResponseType<T>) => Promise<T>
+) {
+  return async function handler(req: NextApiRequest, res: ResponseType<T>) {
     try {
       const session = await getServerSession(req, res, authOptions);
-      const result = await func(req, session);
+      const result = await func(req, session, res);
 
       if (!result) return res.json({ success: true });
       return res.json(result);
@@ -34,11 +35,17 @@ export function apiWrapper<T>(func: (req: NextApiRequest, session: Session | nul
   };
 }
 
-export function authApiWrapper<T>(func: (req: NextApiRequest, session: Session) => Promise<T>) {
-  return apiWrapper(async function (req: NextApiRequest, session: Session | null) {
+export function authApiWrapper<T>(
+  func: (req: NextApiRequest, session: Session, res: ResponseType<T>) => Promise<T>
+) {
+  return apiWrapper(async function (
+    req: NextApiRequest,
+    session: Session | null,
+    res: ResponseType<T>
+  ) {
     if (!session) {
       throw new ApiError(401, "Unauthorized");
     }
-    return await func(req, session);
+    return await func(req, session, res);
   });
 }
