@@ -7,7 +7,7 @@ import { editorStore } from "@/stores/editorStore";
 import { twMerge } from "tailwind-merge";
 
 type Props = {
-  content?: Doc;
+  content?: Doc | null;
   readonly?: boolean;
   className?: string;
   placeholder?: string;

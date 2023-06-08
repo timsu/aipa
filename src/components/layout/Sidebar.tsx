@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useStore } from "@nanostores/react";
 import { projectStore } from "@/stores/projectStore";
+import { useRouter } from "next/router";
 
 const navigation = [
   { name: "My Stuff", href: "/dashboard", icon: HomeIcon },
@@ -24,7 +25,8 @@ const navigation = [
 ];
 
 export default function Sidebar() {
-  const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+  const router = useRouter();
+  const currentPath = router.pathname;
   const projects = useStore(projectStore.projects);
 
   return (

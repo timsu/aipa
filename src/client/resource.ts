@@ -35,8 +35,10 @@ export class Resource<Type extends GenericModel> {
 export class ResourceWithParent<Parent extends GenericModel, Type extends GenericModel> {
   constructor(public conn: Connector, public parentParam: string, public name: string) {}
 
-  async list(parent: Parent): Promise<ItemsResponse<Type>> {
-    const response = await this.conn.axios.get(`/${this.name}?${this.parentParam}=${parent.id}`);
+  async list(parent: Parent, params?: string): Promise<ItemsResponse<Type>> {
+    const response = await this.conn.axios.get(
+      `/${this.name}?${this.parentParam}=${parent.id}${params ? "&" + params : ""}`
+    );
     return response.data;
   }
 

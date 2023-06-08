@@ -25,9 +25,10 @@ export default authApiWrapper<Issue[] | Issue>(function handler(
 async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
   const filter = req.query.filter as string;
 
+  let issues: Issue[] = [];
   if (filter == "mystuff") {
     // return all un-resolved issues assigned to me + drafts
-    return await prisma.issue.findMany({
+    issues = await prisma.issue.findMany({
       where: {
         OR: [
           { assigneeId: session.user.id, resolvedAt: null },
@@ -41,7 +42,7 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
   } else if (filter == "project") {
     const projectId = req.query.projectId as string;
     // return active issues for this project
-    return await prisma.issue.findMany({
+    issues = await prisma.issue.findMany({
       where: {
         projectId,
         resolvedAt: null,
@@ -53,6 +54,12 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
   } else {
     throw new ApiError(400, "Unimplemented");
   }
+
+  return issues.map((i) => ({
+    ...i,
+    type: i.type.trim(),
+    state: i.state.trim(),
+  }));
 }
 
 async function create(session: Session, req: NextApiRequest): Promise<Issue> {
@@ -77,7 +84,7 @@ async function create(session: Session, req: NextApiRequest): Promise<Issue> {
 
   const result = await prisma.issue.create({
     data: {
-      title,
+      title: title.trim(),
       description,
       number: number + 1,
       type,

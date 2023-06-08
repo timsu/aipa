@@ -27,8 +27,8 @@ export default function PageLayout({
       <div
         className={twMerge("px-4 sm:px-6 lg:px-8 flex-1", fullSize ? "" : "max-w-4xl", className)}
       >
-        <div className="flex items-center justify-between">
-          <h1 className="font-bold text-2xl my-4">{title}</h1>
+        <div className="flex items-center">
+          <h1 className="font-bold text-2xl my-4 flex-1">{title}</h1>
           {titleButtons}
         </div>
         <div>{children}</div>

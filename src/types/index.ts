@@ -55,6 +55,16 @@ export enum IssueState {
   WONT_FIX = "wont_fix",
 }
 
+export const stateLabels = {
+  [IssueState.DRAFT]: "Draft",
+  [IssueState.BACKLOG]: "Backlog",
+  [IssueState.TODO]: "Todo",
+  [IssueState.IN_PROGRESS]: "In Progress",
+  [IssueState.REVIEW]: "In Review",
+  [IssueState.DONE]: "Done",
+  [IssueState.WONT_FIX]: "Won't Fix",
+};
+
 export enum IssueType {
   STORY = "story",
   TASK = "task",

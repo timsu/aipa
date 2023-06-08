@@ -1,19 +1,43 @@
 import { atom, map } from "nanostores";
 
-import Prisma, { Project, User } from "@prisma/client";
+import Prisma, { Issue, Project, User } from "@prisma/client";
 import API from "@/client/api";
 import { logger } from "@/lib/logger";
 import { toast } from "react-toastify";
+import { IssueState } from "@/types";
+
+type IssueMap = { [type: string]: Issue[] };
 
 class DashboardStore {
   // --- services
 
-  projects = atom<Project[]>([]);
+  issues = atom<Issue[]>([]);
+
+  groupedIssues = map<IssueMap>({});
 
   // --- actions
 
-  load = (projects: Project[]) => {
-    this.projects.set(projects);
+  load = async () => {
+    try {
+      const issues = await API.listIssues({ filter: "mystuff" });
+      this.issues.set(issues);
+      this.splitIssues(issues);
+    } catch (error) {
+      logger.error(error);
+      toast.error("Failed to load issues");
+    }
+  };
+
+  splitIssues = (issues: Issue[]) => {
+    const map: IssueMap = {};
+    issues.forEach((issue) => {
+      const state = issue.state.trim();
+      if (!map[state]) {
+        map[state] = [];
+      }
+      map[state].push(issue);
+    });
+    this.groupedIssues.set(map);
   };
 }
 

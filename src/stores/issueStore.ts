@@ -16,6 +16,12 @@ class IssueStore {
   closeIssuePanel = () => {
     this.activeIssue.set(null);
   };
+
+  setActiveIssue = (issue: Issue) => {
+    const current = this.activeIssue.get();
+    if (current && typeof current == "object" && issue.id == current.id) this.closeIssuePanel();
+    else this.activeIssue.set(issue);
+  };
 }
 
 declare global {

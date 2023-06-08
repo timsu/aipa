@@ -18,14 +18,16 @@ import { classNames, unwrapError } from "@/lib/utils";
 import { Issue } from "@prisma/client";
 import { editorStore } from "@/stores/editorStore";
 import API from "@/client/api";
+import { Doc } from "../editor/Doc";
 
-export default function NewIssue() {
+export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const project = useStore(projectStore.activeProject)!;
   const formRef = useRef<HTMLFormElement>(null);
-  const [savedIssue, setSavedIssue] = useState<Issue | null>(null);
+  const [savedIssue, setSavedIssue] = useState<Issue | undefined>(draftIssue);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState<"draft" | "create" | null>(null);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>(draftIssue?.title || "");
 
   const issueTypes = {
     [IssueType.STORY]: {
@@ -43,14 +45,13 @@ export default function NewIssue() {
     },
   };
   const types = Object.keys(issueTypes) as IssueType[];
-  const [issueType, setIssueType] = useState<IssueType>(types[0]);
+  const [issueType, setIssueType] = useState<IssueType>(
+    (draftIssue?.type as IssueType) || types[0]
+  );
 
   const getIssueData = () => {
     setError(null);
     setSuccessMessage(null);
-    const formData = new FormData(formRef.current!);
-
-    const title = formData.get("title") as string;
     const description = editorStore.getDoc();
     const type = issueType;
 
@@ -59,7 +60,7 @@ export default function NewIssue() {
   };
 
   const saveDraft = async () => {
-    setSubmitting("draft");
+    setSubmitting(true);
     const issue = getIssueData();
     issue.state = IssueState.DRAFT;
     try {
@@ -73,16 +74,25 @@ export default function NewIssue() {
     } catch (e) {
       setError(unwrapError(e));
     } finally {
-      setSubmitting(null);
+      setSubmitting(false);
     }
   };
 
-  const createIssue = () => {
-    setError(null);
-    setSuccessMessage(null);
-    setSubmitting("create");
-    const issue = getIssueData();
-    console.log("create", issue);
+  const createIssue = async () => {
+    const issueData = getIssueData();
+    if (
+      !savedIssue ||
+      Object.keys(issueData).find((key) => (savedIssue as any)[key] !== (issueData as any)[key])
+    ) {
+      console.log(
+        "need to draft",
+        Object.keys(issueData).find((key) => (savedIssue as any)[key] !== (issueData as any)[key])
+      );
+      await saveDraft();
+    }
+    // setSubmitting(true);
+
+    console.log("now we create", savedIssue);
   };
 
   return (
@@ -91,7 +101,7 @@ export default function NewIssue() {
         <ProjectBadge project={project} />
         <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-1" />
         <h2 className="font-bold text-xl flex-1">
-          {savedIssue ? `#${savedIssue.number}` : "New Issue"}
+          {savedIssue ? `#${savedIssue.number} (draft)` : "New Issue"}
         </h2>
 
         <button
@@ -124,6 +134,8 @@ export default function NewIssue() {
         <div className="flex flex-col gap-4">
           <TextField
             name="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="text-lg border-gray-300"
             placeholder={issueTypes[issueType].label + " Title"}
           />
@@ -132,6 +144,7 @@ export default function NewIssue() {
         <EditorContainer
           className="h-64 rounded-md border border-gray-300 p-2"
           placeholder="Issue Description"
+          content={draftIssue?.description as Doc}
         />
 
         <div className="flex gap-4">
@@ -140,7 +153,7 @@ export default function NewIssue() {
             data-tooltip-content="In a hurry? Create a draft issue and complete it later."
             data-tooltip-id="tooltip"
             onClick={saveDraft}
-            disabled={submitting === "draft"}
+            disabled={submitting}
           >
             Save Draft
           </Button>
@@ -148,7 +161,7 @@ export default function NewIssue() {
             data-tooltip-content="Validate and create your issue"
             data-tooltip-id="tooltip"
             onClick={createIssue}
-            disabled={submitting === "create"}
+            disabled={submitting}
           >
             Create Issue
           </Button>

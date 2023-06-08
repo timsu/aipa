@@ -16,6 +16,8 @@ import { useUI } from "@/stores/uiStore";
 import PageLayout from "@/components/layout/PageLayout";
 import { issueStore } from "@/stores/issueStore";
 import { useStore } from "@nanostores/react";
+import { dashboardStore } from "@/stores/dashboardStore";
+import DashboardIssues from "./DashboardIssues";
 
 type Props = {
   welcomed: boolean;
@@ -30,6 +32,7 @@ export default function Dashboard({ welcomed, ...props }: Props) {
       logger.info("user needs welcome");
       API.welcome();
     }
+    dashboardStore.load();
   }, [welcomed]);
 
   const newIssue = async () => {
@@ -43,9 +46,20 @@ export default function Dashboard({ welcomed, ...props }: Props) {
   const activeIssue = useStore(issueStore.activeIssue);
 
   const headerButton = (
-    <Button onClick={newIssue} disabled={activeIssue == "new"}>
-      New Issue
-    </Button>
+    <>
+      <div
+        className="mr-4 p-1 hover:bg-gray-100 rounded-md cursor-pointer"
+        onClick={refresh}
+        data-tooltip-content="Refresh"
+        data-tooltip-id="tooltip"
+      >
+        <ArrowPathIcon className="w-4 h-4" />
+      </div>
+
+      <Button onClick={newIssue} disabled={activeIssue == "new"}>
+        New Issue
+      </Button>
+    </>
   );
 
   return (
@@ -54,22 +68,12 @@ export default function Dashboard({ welcomed, ...props }: Props) {
         <title>My Stuff</title>
       </Head>
       <PageLayout title="My Stuff" titleButtons={headerButton}>
-        <div className="flex items-center">
-          <h2 className="font-bold text-lg">In Progress</h2>
-          <div
-            className="ml-4 p-1 hover:bg-gray-100 rounded-md cursor-pointer"
-            onClick={refresh}
-            data-tooltip-content="Refresh"
-            data-tooltip-id="tooltip"
-          >
-            <ArrowPathIcon className="w-4 h-4" />
-          </div>
-        </div>
-        {/* <FormTable /> */}
+        <DashboardIssues />
       </PageLayout>
     </Layout>
   );
 }
+
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
   const { session, redirect, workspaces, activeWorkspace, projects } = await loadWorkspaceData(
     context

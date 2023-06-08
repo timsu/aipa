@@ -40,6 +40,12 @@ class APIService {
     const response = await this.axios.post("/workspaces/invite", { id, emails, fromName });
     return response.data;
   };
+
+  listIssues = async (params: { filter: string; [param: string]: any }): Promise<Issue[]> => {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await this.axios.get("/issues?" + queryString);
+    return response.data;
+  };
 }
 
 const API = new APIService();
