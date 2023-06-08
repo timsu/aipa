@@ -44,7 +44,7 @@ export default function NewWorkspace(props: Props) {
       setError(null);
       setSubmitting(true);
       await API.workspaces.create({ name });
-      router.push("/dashboard");
+      router.push("/projects/new");
     } catch (err: any) {
       setError(err.message);
       return;
@@ -69,10 +69,10 @@ export default function NewWorkspace(props: Props) {
           A workspace consists of users and projects. You will probably only need one workspace for
           your entire company.
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col mt-4">
+        <form onSubmit={handleSubmit} className="flex flex-col mt-4 gap-2">
           <div>Please name your workspace:</div>
           <TextField name="name" placeholder="My Workspace" required />
-          <div className="mt-4">
+          <div className="mt-2">
             {error && <div className="text-red-500 mb-4">{error}</div>}
             <SubmitButton>Create Workspace</SubmitButton>
           </div>
@@ -82,10 +82,8 @@ export default function NewWorkspace(props: Props) {
   );
 }
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
-  const session = await sessionOrRedirect(context);
-  if (isRedirect(session)) return session;
-
-  const props = await loadWorkspaceData(session);
+  const { session, redirect, ...props } = await loadWorkspaceData(context);
+  if (redirect) return redirect;
 
   return {
     props: props as Props,

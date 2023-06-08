@@ -46,18 +46,34 @@ model Project {
   color        String        @db.Char(6)
   workspace    Workspace     @relation(fields: [workspaceId], references: [id])
   workspaceId  String
+  visibility   Int           @default(0)
   meta         Json?
   issues       Issue[]
   fields       IssueField[]
   states       IssueState[]
   types        IssueType[]
   integrations Integration[]
+  users        ProjectUser[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   archivedAt   DateTime?
   deletedAt    DateTime?
 
   @@map("projects")
+}
+
+model ProjectUser {
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id])
+  role      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@id([userId, projectId])
+  @@map("project_users")
 }
 
 model IssueType {
@@ -194,20 +210,21 @@ model Attachment {
 // --- auth
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  welcomedAt    DateTime?
+  id              String    @id @default(cuid())
+  name            String?
+  email           String?   @unique
+  emailVerified   DateTime?
+  image           String?
+  accounts        Account[]
+  sessions        Session[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  welcomedAt      DateTime?
   activeWorkspace String?
-  meta          Json      @default("{}")
+  meta            Json      @default("{}")
 
   workspaces     WorkspaceUser[]
+  projects       ProjectUser[]
   issuesCreated  Issue[]         @relation("issue_creator")
   issuesAssigned Issue[]         @relation("issue_assignee")
   issuesFollowed Issue[]         @relation("issue_followers")

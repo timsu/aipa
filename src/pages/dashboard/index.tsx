@@ -67,19 +67,10 @@ export default function Dashboard({ welcomed, ...props }: Props) {
   );
 }
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
-  const session = await sessionOrRedirect(context);
-  if (isRedirect(session)) return session;
-
-  const { workspaces, activeWorkspace, projects } = await loadWorkspaceData(session);
-
-  if (workspaces.length == 0) {
-    return {
-      redirect: {
-        destination: "/workspaces/new",
-        permanent: false,
-      },
-    };
-  }
+  const { session, redirect, workspaces, activeWorkspace, projects } = await loadWorkspaceData(
+    context
+  );
+  if (redirect) return redirect;
 
   return {
     props: {

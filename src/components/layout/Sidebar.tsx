@@ -5,26 +5,28 @@ import {
   DocumentDuplicateIcon,
   FolderIcon,
   HomeIcon,
+  ListBulletIcon,
+  MapIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
 import { classNames } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
+import { useStore } from "@nanostores/react";
+import { projectStore } from "@/stores/projectStore";
 
 const navigation = [
-  { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-  { name: "Team", href: "#", icon: UsersIcon, current: false },
-  { name: "Projects", href: "#", icon: FolderIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-  { name: "Documents", href: "#", icon: DocumentDuplicateIcon, current: false },
-  { name: "Reports", href: "#", icon: ChartPieIcon, current: false },
-];
-const teams = [
-  { id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
-  { id: 2, name: "Tailwind Labs", href: "#", initial: "T", current: false },
-  { id: 3, name: "Workcation", href: "#", initial: "W", current: false },
+  { name: "My Stuff", href: "/dashboard", icon: HomeIcon },
+  { name: "Issues", href: "/issues", icon: ListBulletIcon },
+  { name: "Roadmap", href: "/roadmap", icon: MapIcon },
+  { name: "Team", href: "/team", icon: UsersIcon },
+  { name: "Projects", href: "/projects", icon: FolderIcon },
 ];
 
 export default function Sidebar() {
+  const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+  const projects = useStore(projectStore.projects);
+
   return (
     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 h-full">
       <div className="flex h-16 shrink-0 items-center">
@@ -36,10 +38,10 @@ export default function Sidebar() {
             <ul role="list" className="-mx-2 space-y-1">
               {navigation.map((item) => (
                 <li key={item.name}>
-                  <a
+                  <Link
                     href={item.href}
                     className={classNames(
-                      item.current
+                      currentPath.startsWith(item.href)
                         ? "bg-gray-50 text-indigo-600"
                         : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
                       "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
@@ -47,7 +49,7 @@ export default function Sidebar() {
                   >
                     <item.icon
                       className={classNames(
-                        item.current
+                        currentPath.startsWith(item.href)
                           ? "text-indigo-600"
                           : "text-gray-400 group-hover:text-indigo-600",
                         "h-6 w-6 shrink-0"
@@ -55,41 +57,47 @@ export default function Sidebar() {
                       aria-hidden="true"
                     />
                     {item.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </li>
+
           <li>
-            <div className="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
+            <div className="text-sm font-semibold leading-6 text-gray-400">Your projects</div>
             <ul role="list" className="-mx-2 mt-2 space-y-1">
-              {teams.map((team) => (
-                <li key={team.name}>
-                  <a
-                    href={team.href}
-                    className={classNames(
-                      team.current
-                        ? "bg-gray-50 text-indigo-600"
-                        : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
-                      "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                    )}
-                  >
-                    <span
+              {projects.map((project) => {
+                const href = "/projects/" + project.id;
+
+                return (
+                  <li key={project.id}>
+                    <Link
+                      href={href}
                       className={classNames(
-                        team.current
-                          ? "text-indigo-600 border-indigo-600"
-                          : "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
-                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+                        currentPath.startsWith(href)
+                          ? "bg-gray-50 text-indigo-600"
+                          : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
+                        "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                       )}
                     >
-                      {team.initial}
-                    </span>
-                    <span className="truncate">{team.name}</span>
-                  </a>
-                </li>
-              ))}
+                      <span
+                        className={classNames(
+                          "/projects/" + project.id
+                            ? "text-indigo-600 border-indigo-600"
+                            : "text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600",
+                          "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+                        )}
+                      >
+                        {project.shortcode}
+                      </span>
+                      <span className="truncate">{project.name}</span>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </li>
+
           <li className="mt-auto">
             <a
               href="#"

@@ -22,7 +22,7 @@ export default authApiWrapper<Workspace[] | Workspace>(function handler(
 });
 
 async function list(session: Session, req: NextApiRequest): Promise<Workspace[]> {
-  const forms = await prisma.workspace.findMany({
+  const items = await prisma.workspace.findMany({
     where: {
       users: {
         some: {
@@ -32,7 +32,7 @@ async function list(session: Session, req: NextApiRequest): Promise<Workspace[]>
     },
   });
 
-  return forms;
+  return items;
 }
 
 async function create(session: Session, req: NextApiRequest): Promise<Workspace> {
@@ -69,7 +69,7 @@ async function update(session: Session, req: NextApiRequest): Promise<Workspace>
 
   const { id, options, ...updates } = req.body;
 
-  const workspace = await prisma.workspace.findFirst({
+  const item = await prisma.workspace.findFirst({
     where: {
       id: req.body.id,
       users: {
@@ -79,17 +79,17 @@ async function update(session: Session, req: NextApiRequest): Promise<Workspace>
       },
     },
   });
-  if (!workspace) throw new ApiError(404, "Form not found");
+  if (!item) throw new ApiError(404, "Not found");
 
   let result = null;
   if (Object.keys(updates).length > 0) {
     result = await prisma.workspace.update({
       where: {
-        id: workspace.id,
+        id: item.id,
       },
       data: updates,
     });
   }
 
-  return result || workspace;
+  return result || item;
 }

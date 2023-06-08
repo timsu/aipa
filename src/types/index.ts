@@ -36,3 +36,9 @@ export type ErrorResponse = {
     message: string;
   };
 };
+
+export enum ProjectVisibility {
+  ALL = 0, // project appears in everyone's list by default
+  MEMBERS = 1, // project only appears in members' lists but is joinable
+  PRIVATE = 2, // project only appears in members' lists and is not joinable
+}

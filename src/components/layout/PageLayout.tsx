@@ -1,16 +1,21 @@
 import { ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
 
 export default function PageLayout({
   children,
   title,
   titleButtons,
+  className,
+  fullSize,
 }: {
   children: ReactNode;
   title: string;
   titleButtons?: ReactNode;
+  fullSize?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="px-4 sm:px-6 lg:px-8 w-full">
+    <div className={twMerge("px-4 sm:px-6 lg:px-8 w-full", fullSize ? "" : "max-w-4xl", className)}>
       <div className="flex items-center justify-between">
         <h1 className="font-bold text-2xl my-4">{title}</h1>
         {titleButtons}

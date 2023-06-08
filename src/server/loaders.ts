@@ -1,7 +1,30 @@
+import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 import prisma, { serialize } from "@/server/prisma";
+import { Project, Workspace } from "@prisma/client";
+import { GetServerSidePropsContext, Redirect } from "next";
 import { Session } from "next-auth";
 
-export const loadWorkspaceData = async (session: Session) => {
+type WorkspaceData = {
+  session: Session;
+  workspaces: Workspace[];
+  activeWorkspace: string | null;
+  projects: Project[];
+  redirect: { redirect: Redirect } | null;
+};
+
+export const loadWorkspaceData = async (
+  context: GetServerSidePropsContext
+): Promise<WorkspaceData> => {
+  const session = await sessionOrRedirect(context);
+  if (isRedirect(session))
+    return {
+      session: {} as Session,
+      workspaces: [],
+      activeWorkspace: null,
+      projects: [],
+      redirect: session,
+    };
+
   const userId = session.user.id;
 
   const workspaces = await prisma.workspace.findMany({
@@ -29,9 +52,29 @@ export const loadWorkspaceData = async (session: Session) => {
       })
     : [];
 
+  console.log(context.resolvedUrl);
+  const redirect =
+    workspaces.length == 0 && !context.resolvedUrl.includes("/workspaces/new")
+      ? {
+          redirect: {
+            destination: "/workspaces/new",
+            permanent: false,
+          },
+        }
+      : projects.length == 0 && !context.resolvedUrl.includes("/projects/new")
+      ? {
+          redirect: {
+            destination: "/projects/new",
+            permanent: false,
+          },
+        }
+      : null;
+
   return {
+    session,
     workspaces: serialize(workspaces),
     activeWorkspace: activeWorkspace?.id,
     projects: serialize(projects),
+    redirect,
   };
 };

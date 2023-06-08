@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { NextRouter, useRouter } from "next/router";
 import { WorkspaceProps } from "@/types";
+import { workspaceStore } from "./workspaceStore";
+import { projectStore } from "./projectStore";
 
 class UIStore {
   realtime: Ably.Realtime | undefined;
@@ -19,6 +21,9 @@ class UIStore {
     if (!this.realtime) {
       this.realtime = new Ably.Realtime({ authUrl: location.origin + "/api/ably/token" });
     }
+
+    workspaceStore.init(props.workspaces, props.activeWorkspace);
+    projectStore.init(props.projects);
   };
 
   toggleSidebar = () => {
