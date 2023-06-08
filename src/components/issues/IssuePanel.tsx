@@ -11,7 +11,7 @@ export default function IssuePanel() {
 
   return (
     <div className="border-l flex-1 py-4 px-4">
-      {issue == "new" ? (
+      {!issue.id ? (
         <NewIssue />
       ) : issue.state == IssueState.DRAFT ? (
         <NewIssue draftIssue={issue} />

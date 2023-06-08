@@ -13,7 +13,7 @@ import {
   CodeBracketSquareIcon,
   IdentificationIcon,
 } from "@heroicons/react/24/solid";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { classNames, unwrapError } from "@/lib/utils";
 import { Issue } from "@prisma/client";
 import { editorStore } from "@/stores/editorStore";
@@ -21,6 +21,24 @@ import API from "@/client/api";
 import { Doc } from "../editor/Doc";
 import { deepEqual } from "fast-equals";
 import { useRouter } from "next/router";
+import { Messages } from "../messages/Messages";
+
+const issueTypes = {
+  [IssueType.STORY]: {
+    label: "Story",
+    icon: <IdentificationIcon className="w-6 h-6 text-green-600" />,
+  },
+  [IssueType.BUG]: { label: "Bug", icon: <BugAntIcon className="w-6 h-6 text-red-600" /> },
+  [IssueType.TASK]: {
+    label: "Task",
+    icon: <CodeBracketSquareIcon className="w-6 h-6 text-blue-400" />,
+  },
+  [IssueType.EXPRIMENT]: {
+    label: "Experiment",
+    icon: <BeakerIcon className="w-6 h-6 text-purple-600" />,
+  },
+};
+const types = Object.keys(issueTypes) as IssueType[];
 
 export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -29,27 +47,15 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [title, setTitle] = useState<string>(draftIssue?.title || "");
+  const [title, setTitle] = useState<string>("");
 
-  const issueTypes = {
-    [IssueType.STORY]: {
-      label: "Story",
-      icon: <IdentificationIcon className="w-6 h-6 text-green-600" />,
-    },
-    [IssueType.BUG]: { label: "Bug", icon: <BugAntIcon className="w-6 h-6 text-red-600" /> },
-    [IssueType.TASK]: {
-      label: "Task",
-      icon: <CodeBracketSquareIcon className="w-6 h-6 text-blue-400" />,
-    },
-    [IssueType.EXPRIMENT]: {
-      label: "Experiment",
-      icon: <BeakerIcon className="w-6 h-6 text-purple-600" />,
-    },
-  };
-  const types = Object.keys(issueTypes) as IssueType[];
-  const [issueType, setIssueType] = useState<IssueType>(
-    (draftIssue?.type as IssueType) || types[0]
-  );
+  const [issueType, setIssueType] = useState<IssueType>(types[0]);
+
+  useEffect(() => {
+    setTitle(draftIssue?.title || "");
+    setIssueType((draftIssue?.type as IssueType) || types[0]);
+    setSavedIssue(draftIssue);
+  }, [draftIssue]);
 
   const getIssueData = () => {
     setError(null);
@@ -101,9 +107,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     setSuccessMessage(null);
     setError(null);
     try {
-      const result = await issueStore.transitionIssue(issue, IssueState.BACKLOG);
-      if (result) setSuccessMessage("Finished.");
-      else setError("Validation failed.");
+      await issueStore.transitionIssue(issue, IssueState.BACKLOG);
     } catch (e) {
       setError(unwrapError(e));
     } finally {
@@ -212,20 +216,6 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
       </form>
 
       {savedIssue && <Messages />}
-    </div>
-  );
-}
-
-function Messages() {
-  const messages = useStore(issueStore.messages);
-
-  return (
-    <div className="mt-4 py-4 border-t">
-      {messages.map((message, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <div className="text-gray-500">{message.content}</div>
-        </div>
-      ))}
     </div>
   );
 }

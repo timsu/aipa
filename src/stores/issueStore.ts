@@ -8,14 +8,14 @@ import API from "@/client/api";
 class IssueStore {
   // --- services
 
-  activeIssue = atom<Issue | null | "new">(null);
+  activeIssue = atom<Issue | null>(null);
 
   messages = atom<IssueMessage[]>([]);
 
   // --- actions
 
   newIssue = () => {
-    this.activeIssue.set("new");
+    this.activeIssue.set({} as Issue);
   };
 
   closeIssuePanel = () => {

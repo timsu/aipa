@@ -56,7 +56,7 @@ export default function Dashboard({ welcomed, ...props }: Props) {
         <ArrowPathIcon className="w-4 h-4" />
       </div>
 
-      <Button onClick={newIssue} disabled={activeIssue == "new"}>
+      <Button onClick={newIssue} disabled={!!activeIssue && !activeIssue.id}>
         New Issue
       </Button>
     </>
