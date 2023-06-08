@@ -13,6 +13,7 @@ import Button from "@/components/ui/Button";
 import { WorkspaceProps } from "@/types";
 import { loadWorkspaceData } from "@/server/loaders";
 import { useUI } from "@/stores/uiStore";
+import PageLayout from "@/components/layout/PageLayout";
 
 type Props = {
   welcomed: boolean;
@@ -41,31 +42,27 @@ export default function Dashboard({ welcomed, ...props }: Props) {
     router.replace(router.asPath);
   };
 
+  const headerButton = <Button onClick={newIssue}>New Issue</Button>;
+
   return (
     <Layout>
       <Head>
         <title>My Stuff</title>
       </Head>
-      <div className="p-4 w-full max-w-4xl mx-auto">
-        <div className="flex items-center justify-between">
-          <h1 className="font-bold text-2xl my-4">My Stuff</h1>
-          <Button onClick={newIssue}>New Issue</Button>
-        </div>
-        <div>
-          <div className="flex items-center">
-            <h2 className="font-bold text-lg">In Progress</h2>
-            <div
-              className="ml-4 p-1 hover:bg-gray-100 rounded-md cursor-pointer"
-              onClick={refresh}
-              data-tooltip-content="Refresh"
-              data-tooltip-id="tooltip"
-            >
-              <ArrowPathIcon className="w-4 h-4" />
-            </div>
+      <PageLayout title="My Stuff" titleButtons={headerButton}>
+        <div className="flex items-center">
+          <h2 className="font-bold text-lg">In Progress</h2>
+          <div
+            className="ml-4 p-1 hover:bg-gray-100 rounded-md cursor-pointer"
+            onClick={refresh}
+            data-tooltip-content="Refresh"
+            data-tooltip-id="tooltip"
+          >
+            <ArrowPathIcon className="w-4 h-4" />
           </div>
-          {/* <FormTable /> */}
         </div>
-      </div>
+        {/* <FormTable /> */}
+      </PageLayout>
     </Layout>
   );
 }

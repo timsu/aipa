@@ -10,7 +10,7 @@ export default function PageLayout({
   titleButtons?: ReactNode;
 }) {
   return (
-    <div className="p-4 w-full max-w-4xl mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 w-full">
       <div className="flex items-center justify-between">
         <h1 className="font-bold text-2xl my-4">{title}</h1>
         {titleButtons}
