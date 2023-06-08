@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import emails from "@/emails/emails";
 import prisma from "@/lib/prisma";
-import { SuccessResponse } from "@/lib/api";
+import { SuccessResponse } from "@/client/api";
 import { Session } from "next-auth";
 import { authApiWrapper } from "@/lib/apiWrapper";
 

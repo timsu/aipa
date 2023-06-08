@@ -1,5 +1,5 @@
 import Link, { LinkProps } from "next/link";
-import { AnchorHTMLAttributes, HTMLAttributes, PropsWithChildren } from "react";
+import { AnchorHTMLAttributes, ButtonHTMLAttributes, PropsWithChildren } from "react";
 import { twMerge } from "tailwind-merge";
 
 export const BASE_BUTTON_CLASS =
@@ -8,7 +8,7 @@ export const BASE_BUTTON_CLASS =
 export default function Button({
   children,
   ...rest
-}: PropsWithChildren<HTMLAttributes<HTMLButtonElement>>) {
+}: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>) {
   const className = twMerge(BASE_BUTTON_CLASS, rest.className);
 
   return (

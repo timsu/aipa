@@ -2,7 +2,7 @@ import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Session, getServerSession } from "next-auth";
 import { logger } from "./logger";
-import { SuccessResponse } from "./api";
+import { SuccessResponse } from "../client/api";
 
 // api wrapper that takes a handler function and returns a next api handler, wrapping errors
 

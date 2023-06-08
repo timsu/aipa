@@ -1,6 +1,6 @@
 import { atom, map } from "nanostores";
 
-import API from "@/lib/api";
+import API from "@/client/api";
 import { clearDebounce } from "@/lib/debounce";
 import { logger } from "@/lib/logger";
 import { QuestionType } from "@/types";

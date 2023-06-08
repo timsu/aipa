@@ -1,6 +1,6 @@
 import { atom, map } from "nanostores";
 
-import API, { FormFillWithData } from "@/lib/api";
+import API, { FormFillWithData } from "@/client/api";
 import Prisma, { Answer, Question } from "@prisma/client";
 import { QuestionType, Signature, User, formOptions } from "@/types";
 import { logger } from "@/lib/logger";

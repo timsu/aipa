@@ -204,6 +204,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   welcomedAt    DateTime?
+  activeWorkspace String?
   meta          Json      @default("{}")
 
   workspaces     WorkspaceUser[]

@@ -1,6 +1,6 @@
 import { Session, getServerSession } from "next-auth";
 
-import { FormFillWithData, SuccessResponse } from "@/lib/api";
+import { FormFillWithData, SuccessResponse } from "@/client/api";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { Answer } from "@prisma/client";

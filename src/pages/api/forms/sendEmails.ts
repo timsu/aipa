@@ -5,7 +5,7 @@ import { authOptions } from "../auth/[...nextauth]";
 import emails from "@/emails/emails";
 import jwt from "jsonwebtoken";
 import { createDueDate } from "@/lib/db";
-import { SuccessResponse } from "@/lib/api";
+import { SuccessResponse } from "@/client/api";
 import { ApiError, authApiWrapper } from "@/lib/apiWrapper";
 
 export default authApiWrapper(async function handler(req: NextApiRequest, session: Session) {

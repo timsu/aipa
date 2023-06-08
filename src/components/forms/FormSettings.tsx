@@ -5,7 +5,7 @@ import { editFormStore } from "@/stores/editFormStore";
 import { useEffect, useState } from "react";
 import Select from "../inputs/Select";
 import { DueDate, formOptions } from "@/types";
-import API from "@/lib/api";
+import API from "@/client/api";
 
 export default function FormSettings() {
   const form = editFormStore.form.get() || fillFormStore.form.get()!;

@@ -1,7 +1,7 @@
 import { deepEqual } from "fast-equals";
 import { atom } from "nanostores";
 
-import API from "@/lib/api";
+import API from "@/client/api";
 import { debounce, DebounceStyle } from "@/lib/debounce";
 import { logger } from "@/lib/logger";
 import { Editor } from "@tiptap/core";

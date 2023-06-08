@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import Layout from "@/components/layout/Layout";
-import API from "@/lib/api";
+import API from "@/client/api";
 import prisma, { serialize } from "@/lib/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 
@@ -33,12 +33,12 @@ export default function Dashboard({ workspaces, projects, welcomed }: Props) {
     }
   }, [welcomed]);
 
-  const newForm = async () => {
+  const newIssue = async () => {
     // create request and get id
-    const form = await API.createForm();
-    const formId = form.id;
-    // redirect to request page via next routing
-    router.push(`/forms/${formId}`);
+    // const form = await API.createForm();
+    // const formId = form.id;
+    // // redirect to request page via next routing
+    // router.push(`/forms/${formId}`);
   };
 
   const refresh = () => {
@@ -53,7 +53,7 @@ export default function Dashboard({ workspaces, projects, welcomed }: Props) {
       <div className="p-4 w-full max-w-4xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="font-bold text-2xl my-4">My Stuff</h1>
-          <Button onClick={newForm}>New Issue</Button>
+          <Button onClick={newIssue}>New Issue</Button>
         </div>
         <div>
           <div className="flex items-center">
@@ -90,6 +90,15 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
       },
     },
   });
+
+  if (workspaces.length == 0) {
+    return {
+      redirect: {
+        destination: "/workspaces/new",
+        permanent: false,
+      },
+    };
+  }
 
   const projects = await prisma.project.findMany({
     where: {

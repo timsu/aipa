@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Modal, { ModalBody, ModalIcon, ModalShell } from "@/components/modals/Modal";
-import API from "@/lib/api";
+import API from "@/client/api";
 import { editFormStore } from "@/stores/editFormStore";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { useStore } from "@nanostores/react";

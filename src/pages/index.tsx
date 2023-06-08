@@ -1,12 +1,10 @@
 import { GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth";
 import Head from "next/head";
-import Link from "next/link";
 
-import Layout from "@/components/layout/Layout";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { AuthLayout } from "@/components/layout/AuthLayout";
-import Button, { ButtonLink } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/Button";
 
 export default function IndexPage() {
   return (
