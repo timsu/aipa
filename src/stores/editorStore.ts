@@ -51,8 +51,9 @@ class EditorStore {
         const contents = editor.getJSON() as Doc;
         if (deepEqual(contents, this.previousContent)) return;
         this.dirty.set(false);
-        await API.saveContents(id, contents);
-        logger.info("saved contents", contents);
+        // await API.saveContents(id, contents);
+        // TODO!
+        logger.info("TODO: save contents", contents);
         this.pendingSaveFn = undefined;
         this.previousContent = contents;
         onSave(contents);
