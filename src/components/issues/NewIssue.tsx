@@ -6,22 +6,26 @@ import { projectStore } from "@/stores/projectStore";
 import ProjectBadge from "../projects/ProjectBadge";
 import EditorContainer from "../editor/EditorContainer";
 import Button from "../ui/Button";
-import { IssueTYPE, IssueType } from "@/types";
+import { IssueState, IssueType } from "@/types";
 import {
   BeakerIcon,
   BugAntIcon,
   CodeBracketSquareIcon,
   IdentificationIcon,
 } from "@heroicons/react/24/solid";
-import { useState } from "react";
-import { classNames } from "@/lib/utils";
+import { useRef, useState } from "react";
+import { classNames, unwrapError } from "@/lib/utils";
+import { Issue } from "@prisma/client";
+import { editorStore } from "@/stores/editorStore";
+import API from "@/client/api";
 
 export default function NewIssue() {
   const project = useStore(projectStore.activeProject)!;
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-  }
+  const formRef = useRef<HTMLFormElement>(null);
+  const [savedIssue, setSavedIssue] = useState<Issue | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<"draft" | "create" | null>(null);
 
   const issueTypes = {
     [IssueType.STORY]: {
@@ -41,12 +45,54 @@ export default function NewIssue() {
   const types = Object.keys(issueTypes) as IssueType[];
   const [issueType, setIssueType] = useState<IssueType>(types[0]);
 
+  const getIssueData = () => {
+    setError(null);
+    setSuccessMessage(null);
+    const formData = new FormData(formRef.current!);
+
+    const title = formData.get("title") as string;
+    const description = editorStore.getDoc();
+    const type = issueType;
+
+    const issue: Partial<Issue> = { title, description, type };
+    return issue;
+  };
+
+  const saveDraft = async () => {
+    setSubmitting("draft");
+    const issue = getIssueData();
+    issue.state = IssueState.DRAFT;
+    try {
+      if (savedIssue) {
+        await API.issues.update(savedIssue.id, issue);
+      } else {
+        const newIssue = await API.issues.create(project, issue);
+        setSavedIssue(newIssue);
+      }
+      setSuccessMessage("Draft saved.");
+    } catch (e) {
+      setError(unwrapError(e));
+    } finally {
+      setSubmitting(null);
+    }
+  };
+
+  const createIssue = () => {
+    setError(null);
+    setSuccessMessage(null);
+    setSubmitting("create");
+    const issue = getIssueData();
+    console.log("create", issue);
+  };
+
   return (
     <div>
       <div className="flex items-center">
         <ProjectBadge project={project} />
         <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-1" />
-        <h2 className="font-bold text-xl flex-1">New Issue</h2>
+        <h2 className="font-bold text-xl flex-1">
+          {savedIssue ? `#${savedIssue.number}` : "New Issue"}
+        </h2>
 
         <button
           className="text-gray-500 hover:text-gray-700"
@@ -56,7 +102,7 @@ export default function NewIssue() {
         </button>
       </div>
 
-      <form className="mt-4 flex flex-col gap-4" onSubmit={handleSubmit}>
+      <form ref={formRef} className="mt-4 flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
         <div className="flex flex-wrap justify-between items-center">
           <div>Issue Type:</div>
 
@@ -77,6 +123,7 @@ export default function NewIssue() {
 
         <div className="flex flex-col gap-4">
           <TextField
+            name="title"
             className="text-lg border-gray-300"
             placeholder={issueTypes[issueType].label + " Title"}
           />
@@ -92,13 +139,23 @@ export default function NewIssue() {
             className="bg-gray-500 hover:bg-gray-700"
             data-tooltip-content="In a hurry? Create a draft issue and complete it later."
             data-tooltip-id="tooltip"
+            onClick={saveDraft}
+            disabled={submitting === "draft"}
           >
             Save Draft
           </Button>
-          <Button data-tooltip-content="Validate and create your issue" data-tooltip-id="tooltip">
+          <Button
+            data-tooltip-content="Validate and create your issue"
+            data-tooltip-id="tooltip"
+            onClick={createIssue}
+            disabled={submitting === "create"}
+          >
             Create Issue
           </Button>
         </div>
+
+        {error && <div className="text-red-500">{error}</div>}
+        {successMessage && <div className="text-green-500">{successMessage}</div>}
       </form>
     </div>
   );

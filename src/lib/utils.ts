@@ -53,7 +53,10 @@ export function unwrapError(error: any) {
   if (isAxiosError(error)) {
     const data = error.response?.data;
     if (!data) return error.message;
-    if (typeof data === "string") return data;
+    if (typeof data === "string") {
+      if (data.startsWith("<!DOCTYPE html>")) return error.message;
+      return data;
+    }
     if (typeof data === "object") {
       if (typeof data.error == "string") return data.error;
       if (typeof data.message == "string") return data.message;
