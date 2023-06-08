@@ -52,6 +52,9 @@ export function streamingApiWrapper(
         throw new ApiError(401, "Unauthorized");
       }
 
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader("Transfer-Encoding", "chunked");
+
       await func(req, session, res);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -62,4 +65,8 @@ export function streamingApiWrapper(
       }
     }
   };
+}
+
+export function streamWrite(res: NextApiResponse, data: any) {
+  res.write(JSON.stringify(data) + ",");
 }

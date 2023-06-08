@@ -2,7 +2,8 @@ import { atom } from "nanostores";
 
 import { Issue, Project } from "@prisma/client";
 import { projectStore } from "./projectStore";
-import { IssueMessage } from "@/types";
+import { IssueMessage, IssueState } from "@/types";
+import API from "@/client/api";
 
 class IssueStore {
   // --- services
@@ -28,7 +29,7 @@ class IssueStore {
 
   setActiveIssue = (issue: Issue) => {
     const current = this.activeIssue.get();
-    if (current && typeof current == "object" && issue.id == current.id) this.closeIssuePanel();
+    if (isIssue(current) && issue.id == current.id) this.closeIssuePanel();
     else {
       this.activeIssue.set(issue);
       this.messages.set([]);
@@ -39,7 +40,33 @@ class IssueStore {
       window.history.pushState({}, "", url.toString());
     }
   };
+
+  transitionIssue = async (issue: Issue, state: IssueState) => {
+    const current = this.activeIssue.get();
+    if (isIssue(current) && issue.id != current.id) this.setActiveIssue(issue);
+    this.messages.set([]);
+
+    let success = false;
+    await API.transitionIssue(issue, { state }, (data: any) => {
+      console.log("got data", data);
+      const messages = this.messages.get();
+      if (isIssueMessage(data)) {
+        messages.push(data);
+        this.messages.set([...messages]);
+      } else if (data.success !== undefined) success = data.success;
+    });
+
+    return success;
+  };
 }
+
+export const isIssue = (issue: Issue | null | "new"): issue is Issue => {
+  return issue !== null && typeof issue == "object";
+};
+
+export const isIssueMessage = (message: IssueMessage | string | any): message is IssueMessage => {
+  return message !== null && typeof message == "object" && !!message.content;
+};
 
 declare global {
   interface Window {

@@ -1,4 +1,4 @@
-import { issueStore } from "@/stores/issueStore";
+import { isIssue, issueStore } from "@/stores/issueStore";
 import { ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import TextField from "../inputs/TextField";
 import { useStore } from "@nanostores/react";
@@ -101,11 +101,9 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     setSuccessMessage(null);
     setError(null);
     try {
-      const result = await API.transitionIssue(issue, { state: IssueState.BACKLOG }, (data) => {
-        console.log("data", data);
-      });
-      console.log("result", result);
-      setSuccessMessage("Finished.");
+      const result = await issueStore.transitionIssue(issue, IssueState.BACKLOG);
+      if (result) setSuccessMessage("Finished.");
+      else setError("Validation failed.");
     } catch (e) {
       setError(unwrapError(e));
     } finally {
@@ -212,6 +210,22 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
         {successMessage && <div className="text-green-500">{successMessage}</div>}
         {error && <div className="text-red-500">{error}</div>}
       </form>
+
+      {savedIssue && <Messages />}
+    </div>
+  );
+}
+
+function Messages() {
+  const messages = useStore(issueStore.messages);
+
+  return (
+    <div className="mt-4 py-4 border-t">
+      {messages.map((message, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <div className="text-gray-500">{message.content}</div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import prisma from "@/server/prisma";
 import { Issue } from "@prisma/client";
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { ApiError, authApiWrapper, streamingApiWrapper } from "@/server/apiWrapper";
+import { ApiError, authApiWrapper, streamWrite, streamingApiWrapper } from "@/server/apiWrapper";
 import { getProject } from ".";
 import { IssueState } from "@/types";
 import { ablySendIssueMessage, ablySendIssueUpdate } from "@/server/ably";
@@ -41,31 +41,31 @@ export default streamingApiWrapper(async function handler(
 });
 
 async function validateCreateIssue(issue: Issue, nextState: IssueState, res: NextApiResponse) {
-  res.write(JSON.stringify({ role: "assistant", content: "Validating..." }));
+  streamWrite(res, { role: "assistant", content: "Validating..." });
 
   // validate title and body
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
   const validationResult = "FAIL\nYour issue does not contain sufficient description.";
   const message = validationResult.substring(validationResult.indexOf("\n") + 1).trim();
 
   if (message) {
-    res.write(JSON.stringify({ role: "assistant", content: message }));
+    streamWrite(res, { role: "assistant", content: message });
   }
 
   // if PASS
   if (validationResult.startsWith("PASS")) {
     const updates = { state: nextState };
-    const updatedIssue = await prisma.issue.update({
+    const newIssue = await prisma.issue.update({
       where: {
         id: issue.id,
       },
       data: updates,
     });
     ablySendIssueUpdate(issue.id, updates);
-    res.write(JSON.stringify({ success: true }));
+    streamWrite(res, { success: true, issue: newIssue });
   } else {
     // if FAIL
-    res.write(JSON.stringify({ success: false }));
+    streamWrite(res, { success: false });
   }
 
   res.end();

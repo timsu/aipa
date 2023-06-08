@@ -3,6 +3,7 @@ import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
 import { Issue, Project, User, Workspace } from "@prisma/client";
 import { IssueType, IssueState, SuccessResponse, ChatMessage } from "@/types";
 import { Resource, ResourceWithParent, SingleResource } from "./resource";
+import { logger } from "@/lib/logger";
 
 class APIService {
   axios: AxiosInstance;
@@ -90,11 +91,12 @@ class APIService {
                 return;
               }
 
+              const text = new TextDecoder().decode(value);
               try {
-                const text = new TextDecoder().decode(value);
                 const messages = parsePartialMessages(text);
                 messages.forEach((m) => onMessage(m));
               } catch (error) {
+                logger.error("decoding and parsing", text, error);
                 reject(error);
               }
 
