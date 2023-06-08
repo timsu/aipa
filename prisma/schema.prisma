@@ -145,6 +145,7 @@ model Issue {
   description Json?
   type        String  @db.VarChar(20)
   number      Int
+  identifier   String  @db.VarChar(20) @default("")
   state       String  @db.VarChar(30)
 
   fields      Json?
@@ -170,7 +171,7 @@ model Issue {
   resolvedAt DateTime?
   archivedAt DateTime?
 
-  @@index([projectId, number]) // search for issues by id
+  @@index([projectId, identifier]) // search for issues by shortcode
   @@index([projectId, state]) // search by state
   @@index([projectId, resolvedAt]) // search by resolution
   @@map("issues")

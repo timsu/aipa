@@ -5,6 +5,7 @@ import API from "@/client/api";
 import { logger } from "@/lib/logger";
 import { toast } from "react-toastify";
 import { IssueState } from "@/types";
+import { issueStore } from "./issueStore";
 
 type IssueMap = { [type: string]: Issue[] };
 
@@ -22,6 +23,15 @@ class DashboardStore {
       const issues = await API.listIssues({ filter: "mystuff" });
       this.issues.set(issues);
       this.splitIssues(issues);
+
+      const params = new URLSearchParams(window.location.search);
+      const issueQuery = params.get("issue");
+      if (issueQuery) {
+        const issue = issues.find((issue) => issue.identifier === issueQuery);
+        if (issue) {
+          issueStore.setActiveIssue(issue);
+        }
+      }
     } catch (error) {
       logger.error(error);
       toast.error("Failed to load issues");

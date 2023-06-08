@@ -87,6 +87,7 @@ async function create(session: Session, req: NextApiRequest): Promise<Issue> {
       title: title.trim(),
       description,
       number: number + 1,
+      identifier: `${project.shortcode}-${number + 1}`,
       type,
       state,
       creatorId: session.dbUser.id,

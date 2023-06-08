@@ -2,11 +2,14 @@ import { atom } from "nanostores";
 
 import { Issue, Project } from "@prisma/client";
 import { projectStore } from "./projectStore";
+import { IssueMessage } from "@/types";
 
 class IssueStore {
   // --- services
 
   activeIssue = atom<Issue | null | "new">(null);
+
+  messages = atom<IssueMessage[]>([]);
 
   // --- actions
 
@@ -28,19 +31,15 @@ class IssueStore {
     if (current && typeof current == "object" && issue.id == current.id) this.closeIssuePanel();
     else {
       this.activeIssue.set(issue);
+      this.messages.set([]);
+
       // update query param
       const url = new URL(window.location.href);
-      url.searchParams.set("issue", getIssueId(issue));
+      url.searchParams.set("issue", issue.identifier);
       window.history.pushState({}, "", url.toString());
     }
   };
 }
-
-export const getIssueId = (issue: Issue) => {
-  const project = projectStore.projects.get().find((p) => p.id == issue.projectId);
-  if (!project) return issue.id;
-  return `${project.shortcode}-${issue.number}`;
-};
 
 declare global {
   interface Window {

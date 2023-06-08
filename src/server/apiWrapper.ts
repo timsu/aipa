@@ -14,13 +14,11 @@ export class ApiError extends Error {
 
 type ResponseType<T> = NextApiResponse<string | T | SuccessResponse>;
 
-export function apiWrapper<T>(
-  func: (req: NextApiRequest, session: Session | null, res: ResponseType<T>) => Promise<T>
-) {
+export function apiWrapper<T>(func: (req: NextApiRequest, session: Session | null) => Promise<T>) {
   return async function handler(req: NextApiRequest, res: ResponseType<T>) {
     try {
       const session = await getServerSession(req, res, authOptions);
-      const result = await func(req, session, res);
+      const result = await func(req, session);
 
       if (!result) return res.json({ success: true });
       return res.json(result);
@@ -35,17 +33,33 @@ export function apiWrapper<T>(
   };
 }
 
-export function authApiWrapper<T>(
-  func: (req: NextApiRequest, session: Session, res: ResponseType<T>) => Promise<T>
-) {
-  return apiWrapper(async function (
-    req: NextApiRequest,
-    session: Session | null,
-    res: ResponseType<T>
-  ) {
+export function authApiWrapper<T>(func: (req: NextApiRequest, session: Session) => Promise<T>) {
+  return apiWrapper(async function (req: NextApiRequest, session: Session | null) {
     if (!session) {
       throw new ApiError(401, "Unauthorized");
     }
-    return await func(req, session, res);
+    return await func(req, session);
   });
+}
+
+export function streamingApiWrapper(
+  func: (req: NextApiRequest, session: Session, res: NextApiResponse) => Promise<void>
+) {
+  return async function handler(req: NextApiRequest, res: NextApiResponse) {
+    try {
+      const session = await getServerSession(req, res, authOptions);
+      if (!session) {
+        throw new ApiError(401, "Unauthorized");
+      }
+
+      await func(req, session, res);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        res.status(err.code).send(err.message);
+      } else {
+        logger.error(err);
+        res.status(500).send("Internal server error");
+      }
+    }
+  };
 }

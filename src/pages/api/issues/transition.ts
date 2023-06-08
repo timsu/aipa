@@ -4,15 +4,15 @@ import prisma from "@/server/prisma";
 import { Issue } from "@prisma/client";
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { ApiError, authApiWrapper } from "@/server/apiWrapper";
+import { ApiError, authApiWrapper, streamingApiWrapper } from "@/server/apiWrapper";
 import { getProject } from ".";
 import { IssueState } from "@/types";
 import { ablySendIssueMessage, ablySendIssueUpdate } from "@/server/ably";
 
-export default authApiWrapper<Issue>(async function handler(
+export default streamingApiWrapper(async function handler(
   req: NextApiRequest,
   session: Session,
-  res
+  res: NextApiResponse
 ) {
   const { id, project_id } = req.query;
   const { state, type } = req.body;
@@ -32,7 +32,8 @@ export default authApiWrapper<Issue>(async function handler(
 
   if (state) {
     if (issue.state == IssueState.DRAFT) {
-      return await validateCreateIssue(issue, state, res);
+      await validateCreateIssue(issue, state, res);
+      return;
     }
   }
 
@@ -40,7 +41,7 @@ export default authApiWrapper<Issue>(async function handler(
 });
 
 async function validateCreateIssue(issue: Issue, nextState: IssueState, res: NextApiResponse) {
-  res.write("Validating...");
+  res.write(JSON.stringify({ role: "assistant", content: "Validating..." }));
 
   // validate title and body
   await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -48,7 +49,7 @@ async function validateCreateIssue(issue: Issue, nextState: IssueState, res: Nex
   const message = validationResult.substring(validationResult.indexOf("\n") + 1).trim();
 
   if (message) {
-    res.write(message);
+    res.write(JSON.stringify({ role: "assistant", content: message }));
   }
 
   // if PASS
@@ -61,10 +62,11 @@ async function validateCreateIssue(issue: Issue, nextState: IssueState, res: Nex
       data: updates,
     });
     ablySendIssueUpdate(issue.id, updates);
-    return updatedIssue;
+    res.write(JSON.stringify({ success: true }));
+  } else {
+    // if FAIL
+    res.write(JSON.stringify({ success: false }));
   }
 
-  // if FAIL
-  res.write("Validation failed");
   res.end();
 }
