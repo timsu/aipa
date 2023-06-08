@@ -42,8 +42,8 @@ model Project {
   id           String        @id @default(cuid())
   remoteId     String?
   name         String
-  shortcode    String        @db.Char(6)
-  color        String        @db.Char(6)
+  shortcode    String        @db.VarChar(6)
+  color        String        @db.VarChar(6)
   workspace    Workspace     @relation(fields: [workspaceId], references: [id])
   workspaceId  String
   visibility   Int           @default(0)
@@ -80,7 +80,7 @@ model IssueType {
   id          String    @id @default(cuid())
   name        String
   description String?
-  type        String    @db.Char(20)
+  type        String    @db.VarChar(20)
   meta        Json?
   projectId   String?
   project     Project?  @relation(fields: [projectId], references: [id])
@@ -93,9 +93,9 @@ model IssueType {
 
 model IssueState {
   id          String    @id @default(cuid())
-  name        String    @db.Char(30)
+  name        String    @db.VarChar(30)
   description String?
-  type        String    @db.Char(20)
+  type        String    @db.VarChar(20)
   meta        Json?
   projectId   String?
   project     Project?  @relation(fields: [projectId], references: [id])
@@ -110,7 +110,7 @@ model IssueField {
   id          String    @id @default(cuid())
   name        String
   description String?
-  type        String    @db.Char(20)
+  type        String    @db.VarChar(20)
   meta        Json?
   projectId   String?
   project     Project?  @relation(fields: [projectId], references: [id])
@@ -143,9 +143,9 @@ model Issue {
   remoteId    String?
   title       String
   description Json?
-  type        String  @db.Char(20)
+  type        String  @db.VarChar(20)
   number      Int
-  state       String  @db.Char(30)
+  state       String  @db.VarChar(30)
 
   fields      Json?
   meta        Json?

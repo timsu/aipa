@@ -29,7 +29,10 @@ export default function DashboardIssues() {
               </h2>
             </div>
             <div
-              className={classNames("grid grid-cols-1 gap-6", activeIssue ? "" : "sm:grid-cols-2")}
+              className={classNames(
+                "my-2 -mx-4 grid grid-cols-1 gap-6",
+                activeIssue ? "" : "sm:grid-cols-2"
+              )}
             >
               {groupedIssues[state].map((issue) => (
                 <IssueCard

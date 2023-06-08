@@ -19,6 +19,8 @@ import { Issue } from "@prisma/client";
 import { editorStore } from "@/stores/editorStore";
 import API from "@/client/api";
 import { Doc } from "../editor/Doc";
+import { deepEqual } from "fast-equals";
+import { useRouter } from "next/router";
 
 export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -65,7 +67,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     issue.state = IssueState.DRAFT;
     try {
       if (savedIssue) {
-        await API.issues.update(savedIssue.id, issue);
+        await API.issues.update(savedIssue.parentId!, savedIssue.id, issue);
       } else {
         const newIssue = await API.issues.create(project, issue);
         setSavedIssue(newIssue);
@@ -82,17 +84,41 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     const issueData = getIssueData();
     if (
       !savedIssue ||
-      Object.keys(issueData).find((key) => (savedIssue as any)[key] !== (issueData as any)[key])
+      Object.keys(issueData).find(
+        (key) => !deepEqual((savedIssue as any)[key], (issueData as any)[key])
+      )
     ) {
       console.log(
         "need to draft",
-        Object.keys(issueData).find((key) => (savedIssue as any)[key] !== (issueData as any)[key])
+        Object.keys(issueData).find(
+          (key) => !deepEqual((savedIssue as any)[key], (issueData as any)[key])
+        ),
+        savedIssue,
+        issueData
       );
       await saveDraft();
     }
     // setSubmitting(true);
 
     console.log("now we create", savedIssue);
+  };
+
+  const router = useRouter();
+
+  const deleteIssue = async () => {
+    if (!savedIssue) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      await API.issues.update(savedIssue.projectId!, savedIssue.id, { deletedAt: new Date() });
+      issueStore.closeIssuePanel();
+      // reload whatever view we're on
+      router.replace(router.asPath);
+    } catch (e) {
+      setError(unwrapError(e));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -165,6 +191,12 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
           >
             Create Issue
           </Button>
+          <div className="flex-1"></div>
+          {savedIssue && (
+            <Button className="bg-red-700 hover:bg-red-900" onClick={deleteIssue}>
+              Discard Draft
+            </Button>
+          )}
         </div>
 
         {error && <div className="text-red-500">{error}</div>}

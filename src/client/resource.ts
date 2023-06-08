@@ -50,13 +50,18 @@ export class ResourceWithParent<Parent extends GenericModel, Type extends Generi
     return response.data;
   }
 
-  async get(id: string): Promise<ItemResponse<Type>> {
-    const response = await this.conn.axios.get(`/${this.name}/${id}`);
+  async get(parentId: string, id: string): Promise<ItemResponse<Type>> {
+    const response = await this.conn.axios.get(
+      `/${this.name}/${id}?${this.parentParam}=${parentId}`
+    );
     return response.data;
   }
 
-  async update(id: string, item: Partial<Type>): Promise<ItemResponse<Type>> {
-    const response = await this.conn.axios.put(`/${this.name}/${id}`, item);
+  async update(parentId: string, id: string, item: Partial<Type>): Promise<ItemResponse<Type>> {
+    const response = await this.conn.axios.put(
+      `/${this.name}/${id}?${this.parentParam}=${parentId}`,
+      item
+    );
     return response.data;
   }
 }

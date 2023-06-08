@@ -15,8 +15,6 @@ export default authApiWrapper<Issue[] | Issue>(function handler(
 ) {
   if (req.method == "POST") {
     return create(session, req);
-  } else if (req.method == "PUT") {
-    return update(session, req);
   } else {
     return list(session, req);
   }
@@ -95,40 +93,6 @@ async function create(session: Session, req: NextApiRequest): Promise<Issue> {
   });
 
   return result;
-}
-
-async function update(session: Session, req: NextApiRequest): Promise<Issue> {
-  tracker.logEvent(session.user.email, "issue-edit", { keys: Object.keys(req.body) });
-
-  const { id, ...updates } = req.body;
-  const projectId = req.query.project_id as string;
-
-  const project = await getProject(projectId, session);
-  if (!project) throw new ApiError(404, "Project not found");
-
-  if (updates.state || updates.type) {
-    throw new ApiError(400, "Use the /issues/transition endpoint to change issue state / type");
-  }
-
-  const item = await prisma.issue.findFirst({
-    where: {
-      id: req.body.id,
-      projectId,
-    },
-  });
-  if (!item) throw new ApiError(404, "Not found");
-
-  let result = null;
-  if (Object.keys(updates).length > 0) {
-    result = await prisma.issue.update({
-      where: {
-        id: item.id,
-      },
-      data: updates,
-    });
-  }
-
-  return result || item;
 }
 
 export const getProject = async (projectId: string, session: Session) => {
