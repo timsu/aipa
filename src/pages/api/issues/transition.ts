@@ -8,6 +8,9 @@ import { ApiError, authApiWrapper, streamWrite, streamingApiWrapper } from "@/se
 import { getProject } from ".";
 import { IssueState } from "@/types";
 import { ablySendIssueMessage, ablySendIssueUpdate } from "@/server/ably";
+import { textContent } from "@/components/editor/Doc";
+import { chatCompletion } from "@/server/openai";
+import { logger } from "@/lib/logger";
 
 export default streamingApiWrapper(async function handler(
   req: NextApiRequest,
@@ -44,16 +47,34 @@ async function validateCreateIssue(issue: Issue, nextState: IssueState, res: Nex
   streamWrite(res, { role: "assistant", content: "Validating..." });
 
   // validate title and body
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  const validationResult = "FAIL\nYour issue does not contain sufficient description.";
-  const message = validationResult.substring(validationResult.indexOf("\n") + 1).trim();
+  const systemMessage = `You are a friendly project manager assistant. Help make sure no bad tickets get added to our issue tracker. Please return the output as JSON. e.g.
+{ "result": "PASS", "message": "Issue looks good!" }
+{ "result": "FAIL", "message": "The title is too short to be useful" }
+{ "result": "FAIL", "message": "Please add a bit more description about how this bug gets triggered" }
+
+Only return result = PASS or FAIL`;
+
+  const body = textContent(issue.description as any);
+
+  const prompt = `Please validate the following issue:
+  
+Type: ${issue.type}
+Title: ${issue.title}
+Body: ${body}`;
+
+  const gptOutput = await chatCompletion(prompt, "3.5", systemMessage);
+  logger.info(gptOutput);
+  const gptParsed = JSON.parse(gptOutput);
+
+  const passFail = gptParsed.result;
+  const message = gptParsed.message;
 
   if (message) {
     streamWrite(res, { role: "assistant", content: message });
   }
 
   // if PASS
-  if (validationResult.startsWith("PASS")) {
+  if (passFail.startsWith("PASS")) {
     const updates = { state: nextState };
     const newIssue = await prisma.issue.update({
       where: {

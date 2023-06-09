@@ -55,6 +55,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     setTitle(draftIssue?.title || "");
     setIssueType((draftIssue?.type as IssueType) || types[0]);
     setSavedIssue(draftIssue);
+    editorStore.editor?.commands.setContent((draftIssue?.description as Doc) || "");
   }, [draftIssue]);
 
   const getIssueData = () => {
@@ -70,12 +71,12 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const saveDraft = async () => {
     setSubmitting(true);
     const issue = getIssueData();
-    issue.state = IssueState.DRAFT;
     try {
       let updatedIssue: Issue;
       if (savedIssue) {
         updatedIssue = await API.issues.update(savedIssue.projectId!, savedIssue.id, issue);
       } else {
+        issue.state = IssueState.DRAFT;
         updatedIssue = await API.issues.create(project, issue);
       }
       setSuccessMessage("Draft saved.");
@@ -151,20 +152,22 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
       </div>
 
       <form ref={formRef} className="mt-4 flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
-        <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex flex-wrap gap-1 sm:gap-2 xl:gap-3 items-center">
           <div>Issue Type:</div>
 
           {types.map((type) => (
             <button
               key={type}
               className={classNames(
-                "text-sm flex gap-1 items-center hover:bg-blue-200 text-gray-700 rounded-md py-1 px-2 border",
+                "text-sm flex gap-1 items-center hover:bg-blue-200 text-gray-700 rounded-md p-1 xl:px-2 border",
                 issueType === type ? "bg-blue-100 border-blue-500" : "bg-gray-100 border-gray-500"
               )}
               onClick={() => setIssueType(type)}
+              data-tooltip-content={issueTypes[type].label}
+              data-tooltip-id="tooltip"
             >
               {issueTypes[type].icon}
-              <span>{issueTypes[type].label}</span>
+              <span className="hidden lg:inline">{issueTypes[type].label}</span>
             </button>
           ))}
         </div>

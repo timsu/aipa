@@ -109,7 +109,3 @@ declare global {
 export const editorStore = new EditorStore();
 if (typeof window !== "undefined" && process.env.NODE_ENV == "development")
   window.editorStore = editorStore;
-
-export const textContent = (block: JSONContent): string => {
-  return (block.text || "") + (block.content || []).map(textContent).join("");
-};

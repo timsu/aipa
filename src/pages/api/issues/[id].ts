@@ -20,10 +20,6 @@ export default authApiWrapper<Issue>(async function handler(req: NextApiRequest,
   const project = await getProject(projectId, session);
   if (!project) throw new ApiError(404, "Project not found");
 
-  if (updates.state || updates.type) {
-    throw new ApiError(400, "Use the /issues/transition endpoint to change issue state / type");
-  }
-
   const item = await prisma.issue.findFirst({
     where: {
       id: req.body.id,
@@ -31,6 +27,13 @@ export default authApiWrapper<Issue>(async function handler(req: NextApiRequest,
     },
   });
   if (!item) throw new ApiError(404, "Not found");
+
+  if (
+    (updates.state && updates.staet != item.state) ||
+    (updates.type && updates.type != item.type)
+  ) {
+    throw new ApiError(400, "Use the /issues/transition endpoint to change issue state / type");
+  }
 
   let result = null;
   if (Object.keys(updates).length > 0) {
