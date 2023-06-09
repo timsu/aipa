@@ -55,7 +55,7 @@ export enum IssueState {
   WONT_FIX = "wont_fix",
 }
 
-export const stateLabels = {
+export const stateLabels: { [state: string]: string } = {
   [IssueState.DRAFT]: "Draft",
   [IssueState.BACKLOG]: "Backlog",
   [IssueState.TODO]: "Todo",

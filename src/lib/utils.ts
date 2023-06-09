@@ -69,3 +69,10 @@ export function unwrapError(error: any) {
   }
   return error.message;
 }
+
+export function titleCase(input: string) {
+  return input
+    .split(" ")
+    .map((word) => `${word[0].toUpperCase()}${word.substring(1)}`)
+    .join(" ");
+}

@@ -6,7 +6,7 @@ import {
   IdentificationIcon,
 } from "@heroicons/react/24/solid";
 
-export default function IssueIcon({ type }: { type: IssueType }) {
+export default function IssueIcon({ type }: { type: string | IssueType }) {
   switch (type) {
     case IssueType.STORY:
       return <IdentificationIcon className="w-6 h-6 text-green-600" />;

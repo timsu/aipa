@@ -3,6 +3,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useStore } from "@nanostores/react";
 import NewIssue from "./NewIssue";
 import { IssueState } from "@/types";
+import ViewIssue from "./ViewIssue";
 
 export default function IssuePanel() {
   const issue = useStore(issueStore.activeIssue);
@@ -16,7 +17,7 @@ export default function IssuePanel() {
       ) : issue.state == IssueState.DRAFT ? (
         <NewIssue draftIssue={issue} />
       ) : (
-        <div>Issue</div>
+        <ViewIssue issue={issue} />
       )}
     </div>
   );

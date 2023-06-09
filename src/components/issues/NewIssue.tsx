@@ -13,7 +13,7 @@ import {
   CodeBracketSquareIcon,
   IdentificationIcon,
 } from "@heroicons/react/24/solid";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { classNames, unwrapError } from "@/lib/utils";
 import { Issue } from "@prisma/client";
 import { editorStore } from "@/stores/editorStore";
@@ -58,7 +58,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     editorStore.editor?.commands.setContent((draftIssue?.description as Doc) || "");
   }, [draftIssue]);
 
-  const getIssueData = () => {
+  const getIssueData = useCallback(() => {
     setError(null);
     setSuccessMessage(null);
     const description = editorStore.getDoc();
@@ -66,9 +66,9 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
 
     const issue: Partial<Issue> = { title, description, type };
     return issue;
-  };
+  }, [title, issueType]);
 
-  const saveDraft = async () => {
+  const saveDraft = useCallback(async () => {
     setSubmitting(true);
     const issue = getIssueData();
     try {
@@ -88,9 +88,9 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
       setSubmitting(false);
     }
     return false;
-  };
+  }, [getIssueData, project, savedIssue]);
 
-  const createIssue = async () => {
+  const createIssue = useCallback(async () => {
     const issueData = getIssueData();
     let issue: Issue | false | undefined = savedIssue;
     if (
@@ -114,7 +114,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [getIssueData, saveDraft, savedIssue]);
 
   const router = useRouter();
 
@@ -134,6 +134,20 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && e.metaKey) {
+        e.preventDefault();
+        createIssue();
+      } else if (e.key == "s" && e.metaKey) {
+        e.preventDefault();
+        saveDraft();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [createIssue, saveDraft]);
+
   return (
     <div>
       <div className="flex items-center">
@@ -146,6 +160,8 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
         <button
           className="text-gray-500 hover:text-gray-700"
           onClick={() => issueStore.closeIssuePanel()}
+          data-tooltip-content="Close"
+          data-tooltip-id="tooltip"
         >
           <XMarkIcon className="w-6 h-6" />
         </button>
@@ -175,6 +191,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
         <div className="flex flex-col gap-4">
           <TextField
             name="title"
+            autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="text-lg border-gray-300"
@@ -196,7 +213,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
             onClick={saveDraft}
             disabled={submitting}
           >
-            Save Draft
+            Save Draft (⌘S)
           </Button>
           <Button
             data-tooltip-content="Validate and create your issue"
@@ -204,7 +221,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
             onClick={createIssue}
             disabled={submitting}
           >
-            Create Issue
+            Create Issue (⌘⏎)
           </Button>
           <div className="flex-1"></div>
           {savedIssue && (

@@ -56,7 +56,11 @@ Only return result = PASS or FAIL`;
 
   const body = textContent(issue.description as any);
 
-  const prompt = `Please validate the following issue:
+  const prompt = `Please validate the following issue. Our rules:
+
+- issues must have good spelling and grammar
+- for stories, description must tell what the user should experience
+- for bugs, basic repro steps should be included, or "no repro" should be indicated
   
 Type: ${issue.type}
 Title: ${issue.title}
@@ -83,7 +87,7 @@ Body: ${body}`;
       data: updates,
     });
     ablySendIssueUpdate(issue.id, updates);
-    streamWrite(res, { success: true, issue: newIssue });
+    streamWrite(res, { success: true });
   } else {
     // if FAIL
     streamWrite(res, { success: false });
