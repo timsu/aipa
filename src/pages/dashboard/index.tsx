@@ -40,7 +40,7 @@ export default function Dashboard({ welcomed, ...props }: Props) {
   };
 
   const refresh = () => {
-    router.replace(router.asPath);
+    dashboardStore.load();
   };
 
   const activeIssue = useStore(issueStore.activeIssue);

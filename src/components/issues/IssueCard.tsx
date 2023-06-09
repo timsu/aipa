@@ -2,7 +2,7 @@ import { projectStore } from "@/stores/projectStore";
 import { Issue } from "@prisma/client";
 import Image from "next/image";
 import ProjectBadge from "../projects/ProjectBadge";
-import IssueIcon from "./IssueIcon";
+import IssueIcon from "./IssueTypeIcon";
 import { IssueType } from "@/types";
 import { classNames } from "@/lib/utils";
 
@@ -44,14 +44,16 @@ export default function IssueCard({
             {issue.type}
           </p>
         </div>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          width={32}
-          height={32}
-          className="flex-shrink-0 rounded-full bg-gray-300"
-          src={"https://i.pravatar.cc/32"}
-          alt="avatar"
-        />
+        {issue.assigneeId && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            width={32}
+            height={32}
+            className="flex-shrink-0 rounded-full bg-gray-300"
+            src={"https://i.pravatar.cc/32"}
+            alt="avatar"
+          />
+        )}
       </div>
     </div>
   );

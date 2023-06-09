@@ -49,8 +49,10 @@ async function validateCreateIssue(issue: Issue, nextState: IssueState, res: Nex
   // validate title and body
   const systemMessage = `You are a friendly project manager assistant. Help make sure no bad tickets get added to our issue tracker. Please return the output as JSON. e.g.
 { "result": "PASS", "message": "Issue looks good!" }
-{ "result": "FAIL", "message": "The title is too short to be useful" }
-{ "result": "FAIL", "message": "Please add a bit more description about how this bug gets triggered" }
+{ "result": "FAIL", "message": "The title is too short to be useful. How about this: xxx" }
+{ "result": "FAIL", "message": "Please add a bit more description about how this bug gets triggered. For example: xxx" }
+
+The message should contain suggestions for how to fix the issue, e.g. suggested improvements to description or title.
 
 Only return result = PASS or FAIL`;
 

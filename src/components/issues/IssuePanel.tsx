@@ -4,9 +4,11 @@ import { useStore } from "@nanostores/react";
 import NewIssue from "./NewIssue";
 import { IssueState } from "@/types";
 import ViewIssue from "./ViewIssue";
+import EditIssue from "./EditIssue";
 
 export default function IssuePanel() {
   const issue = useStore(issueStore.activeIssue);
+  const editing = useStore(issueStore.editingIssue);
 
   if (!issue) return null;
 
@@ -16,6 +18,8 @@ export default function IssuePanel() {
         <NewIssue />
       ) : issue.state == IssueState.DRAFT ? (
         <NewIssue draftIssue={issue} />
+      ) : editing ? (
+        <EditIssue issue={issue} />
       ) : (
         <ViewIssue issue={issue} />
       )}

@@ -14,6 +14,8 @@ class IssueStore {
 
   activeIssue = atom<Issue | null>(null);
 
+  editingIssue = atom<boolean>(false);
+
   messages = atom<IssueMessage[]>([]);
 
   subscription: { id: string; channel: Ably.RealtimeChannelCallbacks } | undefined;
@@ -123,6 +125,20 @@ class IssueStore {
     });
 
     return success;
+  };
+
+  issueUpdated = (issue: Issue) => {
+    const issues = this.issues.get();
+    const index = issues.findIndex((i) => i.id === issue.id);
+    if (index > -1) {
+      issues[index] = issue;
+      this.issues.set([...issues]);
+      this.splitIssues(issues);
+    }
+
+    if (this.activeIssue.get()?.id === issue.id) {
+      this.activeIssue.set(issue);
+    }
   };
 }
 
