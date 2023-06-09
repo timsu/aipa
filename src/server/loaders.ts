@@ -1,5 +1,6 @@
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 import prisma, { serialize } from "@/server/prisma";
+import { ProjectVisibility } from "@/types";
 import { Project, Workspace } from "@prisma/client";
 import { GetServerSidePropsContext, Redirect } from "next";
 import { Session } from "next-auth";
@@ -41,15 +42,7 @@ export const loadWorkspaceData = async (
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
 
   const projects = activeWorkspace
-    ? await prisma.project.findMany({
-        where: {
-          workspace: {
-            id: activeWorkspace.id,
-          },
-          archivedAt: null,
-          deletedAt: null,
-        },
-      })
+    ? await prisma.project.findMany(allProjectsForWorkspace(activeWorkspace.id, session))
     : [];
 
   const redirect =
@@ -79,5 +72,29 @@ export const loadWorkspaceData = async (
     activeWorkspace: activeWorkspace?.id || null,
     projects: serialize(projects),
     redirect,
+  };
+};
+
+export const allProjectsForWorkspace = (workspaceId: string, session: Session) => {
+  return {
+    where: {
+      workspace: {
+        id: workspaceId,
+      },
+      archivedAt: null,
+      deletedAt: null,
+      OR: [
+        {
+          users: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+        {
+          visibility: ProjectVisibility.ALL,
+        },
+      ],
+    },
   };
 };

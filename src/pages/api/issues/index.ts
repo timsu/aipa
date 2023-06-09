@@ -7,7 +7,8 @@ import Prisma, { Issue, Project, Workspace } from "@prisma/client";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiError, authApiWrapper } from "@/server/apiWrapper";
-import { IssueState } from "@/types";
+import { IssueState, ProjectVisibility } from "@/types";
+import { allProjectsForWorkspace } from "@/server/loaders";
 
 export default authApiWrapper<Issue[] | Issue>(function handler(
   req: NextApiRequest,
@@ -48,6 +49,29 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
         deletedAt: null,
         state: {
           not: IssueState.DRAFT,
+        },
+      },
+    });
+  } else if (filter == "all") {
+    // return all visible issues for this user
+    const workspaceId = req.query.workspaceId as string;
+
+    const projects = await prisma.project.findMany({
+      select: {
+        id: true,
+      },
+      ...allProjectsForWorkspace(workspaceId, session),
+    });
+
+    issues = await prisma.issue.findMany({
+      where: {
+        resolvedAt: null,
+        deletedAt: null,
+        state: {
+          not: IssueState.DRAFT,
+        },
+        projectId: {
+          in: projects.map((p) => p.id),
         },
       },
     });
@@ -117,6 +141,7 @@ export const getProject = async (projectId: string, session: Session) => {
       workspaceId: {
         in: workspaces.map((w) => w.id),
       },
+      deletedAt: null,
       OR: [
         {
           users: {
@@ -126,7 +151,7 @@ export const getProject = async (projectId: string, session: Session) => {
           },
         },
         {
-          visibility: 0,
+          visibility: ProjectVisibility.ALL,
         },
       ],
     },

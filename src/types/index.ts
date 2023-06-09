@@ -73,6 +73,7 @@ export enum IssueType {
 }
 
 export type IssueMessage = {
+  createdAt: Date;
   role: "user" | "assistant" | "system";
   from?: string;
   content: string;

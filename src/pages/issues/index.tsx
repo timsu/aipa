@@ -18,29 +18,31 @@ import { issueStore } from "@/stores/issueStore";
 import { useStore } from "@nanostores/react";
 import { dashboardStore } from "@/stores/dashboardStore";
 import DashboardIssues from "./DashboardIssues";
+import { toast } from "react-toastify";
+import { unwrapError } from "@/lib/utils";
 
-type Props = {
-  welcomed: boolean;
-} & WorkspaceProps;
+type Props = {} & WorkspaceProps;
 
-export default function Dashboard({ welcomed, ...props }: Props) {
+export default function Issues({ ...props }: Props) {
   const router = useRouter();
   useUI(props);
 
   useEffect(() => {
-    if (!welcomed) {
-      logger.info("user needs welcome");
-      API.welcome();
-    }
-    dashboardStore.load();
-  }, [welcomed]);
+    refresh();
+  }, []);
 
   const newIssue = async () => {
     issueStore.newIssue();
   };
 
-  const refresh = () => {
-    router.replace(router.asPath);
+  const refresh = async () => {
+    try {
+      const issues = await API.listIssues({ filter: "all", workspaceId: props.activeWorkspace });
+      issueStore.loadIssues(issues);
+    } catch (error) {
+      logger.error(error);
+      toast.error(unwrapError(error));
+    }
   };
 
   const activeIssue = useStore(issueStore.activeIssue);
@@ -64,7 +66,7 @@ export default function Dashboard({ welcomed, ...props }: Props) {
 
   return (
     <Layout>
-      <PageLayout title="My Stuff" titleButtons={headerButton}>
+      <PageLayout title="All Issues" titleButtons={headerButton}>
         <DashboardIssues />
       </PageLayout>
     </Layout>
@@ -72,17 +74,10 @@ export default function Dashboard({ welcomed, ...props }: Props) {
 }
 
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
-  const { session, redirect, workspaces, activeWorkspace, projects } = await loadWorkspaceData(
-    context
-  );
+  const { session, redirect, ...props } = await loadWorkspaceData(context);
   if (redirect) return redirect;
 
   return {
-    props: {
-      activeWorkspace,
-      workspaces,
-      projects,
-      welcomed: !!session.dbUser.welcomedAt,
-    } as Props,
+    props: props as Props,
   };
 };
