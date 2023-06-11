@@ -6,6 +6,7 @@ import { IssueMessage, IssueState } from "@/types";
 import API from "@/client/api";
 import type { Types as Ably } from "ably";
 import { uiStore } from "./uiStore";
+import { logger } from "@/lib/logger";
 
 type IssueMap = { [type: string]: Issue[] };
 
@@ -116,15 +117,23 @@ class IssueStore {
 
     let success = false;
     await API.transitionIssue(issue, { state }, (data: any) => {
-      console.log("got data", data);
       const messages = this.messages.get();
       if (isIssueMessage(data)) {
         messages.push(data);
         this.messages.set([...messages]);
-      } else if (data.success !== undefined) success = data.success;
+      } else if (data.success !== undefined) {
+        logger.info("transitionIssue", data);
+        success = data.success;
+        if (data.issue) this.issueUpdated(data.issue);
+      }
     });
 
     return success;
+  };
+
+  updateIssue = async (issue: Issue) => {
+    const newIssue = await API.issues.get(issue.projectId!, issue.id);
+    this.issueUpdated(newIssue);
   };
 
   issueUpdated = (issue: Issue) => {

@@ -7,7 +7,7 @@ import { Catamaran } from "next/font/google";
 import type { AppProps } from "next/app";
 import type { Session } from "next-auth";
 
-const catamaran = Catamaran({ subsets: ["latin"], weight: ["400", "600", "700"] });
+const catamaran = Catamaran({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 // Use of the <SessionProvider> is mandatory to allow components that call
 // `useSession()` anywhere in your application to access the `session` object.

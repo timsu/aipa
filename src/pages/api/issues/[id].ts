@@ -29,7 +29,9 @@ export default authApiWrapper<Issue>(async function handler(req: NextApiRequest,
   });
   if (!item) throw new ApiError(404, "Not found");
 
-  console.log("meow", updates, item);
+  if (req.method == "GET") {
+    return item;
+  }
 
   if (
     (updates.state && updates.state != item.state) ||

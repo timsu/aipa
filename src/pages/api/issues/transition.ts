@@ -1,12 +1,12 @@
 import { Session } from "next-auth";
 
-import prisma from "@/server/prisma";
+import prisma, { serialize } from "@/server/prisma";
 import { Issue } from "@prisma/client";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiError, authApiWrapper, streamWrite, streamingApiWrapper } from "@/server/apiWrapper";
 import { getProject } from ".";
-import { IssueState } from "@/types";
+import { IssueState, stateLabels } from "@/types";
 import { ablySendIssueMessage, ablySendIssueUpdate } from "@/server/ably";
 import { textContent } from "@/components/editor/Doc";
 import { chatCompletion } from "@/server/openai";
@@ -34,8 +34,28 @@ export default streamingApiWrapper(async function handler(
   if (state && type) throw new ApiError(400, "Cannot set both state and type");
 
   if (state) {
+    if (state == issue.state) {
+      streamWrite(res, { role: "assistant", content: "Nothing to do." });
+      res.end();
+      return;
+    }
+
     if (issue.state == IssueState.DRAFT) {
       await validateCreateIssue(issue, state, res);
+      return;
+    } else if (state == IssueState.IN_PROGRESS || state == IssueState.TODO) {
+      const updates: IssueUpdates = { state };
+      if (state == IssueState.IN_PROGRESS && !issue.assigneeId)
+        updates.assigneeId = session.user.id;
+      streamWrite(res, { role: "assistant", content: `State changed to ${stateLabels[state]}.` });
+      await applyUpdates(issue, updates, res);
+      res.end();
+      return;
+    } else {
+      streamWrite(res, { role: "assistant", content: "TODO: validate this transition..." });
+      const updates: IssueUpdates = { state };
+      await applyUpdates(issue, updates, res);
+      res.end();
       return;
     }
   }
@@ -82,18 +102,25 @@ Body: ${body}`;
   // if PASS
   if (passFail.startsWith("PASS")) {
     const updates = { state: nextState };
-    const newIssue = await prisma.issue.update({
-      where: {
-        id: issue.id,
-      },
-      data: updates,
-    });
-    ablySendIssueUpdate(issue.id, updates);
-    streamWrite(res, { success: true });
+    applyUpdates(issue, updates, res);
   } else {
     // if FAIL
     streamWrite(res, { success: false });
   }
 
   res.end();
+}
+
+type IssueUpdates = { state?: IssueState; assigneeId?: string };
+
+async function applyUpdates(issue: Issue, updates: IssueUpdates, res: NextApiResponse) {
+  // assign it to you
+  const newIssue = await prisma.issue.update({
+    where: {
+      id: issue.id,
+    },
+    data: updates,
+  });
+  ablySendIssueUpdate(issue.id, updates);
+  streamWrite(res, { success: true, issue: serialize(newIssue) });
 }
