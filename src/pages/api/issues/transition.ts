@@ -98,9 +98,19 @@ Body: ${body}`;
     { role: "user", content: prompt },
   ];
 
-  const gptOutput = await chatWithHistory(messages, "3.5");
+  let gptOutput = await chatWithHistory(messages, "3.5");
   logger.info(gptOutput);
-  const gptParsed = JSON.parse(gptOutput);
+
+  let gptParsed: { result: string; message: string };
+  if (!gptOutput.startsWith("{")) {
+    if (gptOutput.toLowerCase().includes("pass") || gptOutput.includes("is valid")) {
+      gptParsed = { result: "PASS", message: gptOutput };
+    } else {
+      gptParsed = { result: "FAIL", message: gptOutput };
+    }
+  } else {
+    gptParsed = JSON.parse(gptOutput);
+  }
 
   const passFail = gptParsed.result;
   const message = gptParsed.message;

@@ -33,7 +33,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex w-full h-full relative">
       {showSidebar && (
-        <div className="hidden md:block fixed bg-white w-56 xl:w-72 z-20 sm:relative sm:z-0 border-r">
+        <div className="hidden md:block fixed bg-white w-40 lg:w-56 xl:w-72 z-20 sm:relative sm:z-0 border-r">
           <Sidebar />
         </div>
       )}
