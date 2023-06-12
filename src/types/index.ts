@@ -9,7 +9,7 @@ export type ChatMessage = {
   content: string;
 };
 
-export type User = { name?: string; email: string };
+export type User = { id: string; name: string | null; image?: string | null };
 
 export type UserMeta = {
   from?: string; // send from email
@@ -24,9 +24,11 @@ export type Member = {
 };
 
 export type WorkspaceProps = {
-  activeWorkspace: string;
+  userId: string;
+  activeWorkspace: string | null;
   workspaces: Workspace[];
   projects: Project[];
+  people: User[];
 };
 
 export type SuccessResponse = {

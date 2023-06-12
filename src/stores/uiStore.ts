@@ -23,6 +23,7 @@ class UIStore {
     }
 
     workspaceStore.init(props.workspaces, props.activeWorkspace);
+    workspaceStore.initUsers(props.people, props.userId);
     projectStore.init(props.projects);
   };
 

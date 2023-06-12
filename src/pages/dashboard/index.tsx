@@ -24,7 +24,6 @@ type Props = {
 } & WorkspaceProps;
 
 export default function Dashboard({ welcomed, ...props }: Props) {
-  const router = useRouter();
   useUI(props);
 
   useEffect(() => {
@@ -72,16 +71,12 @@ export default function Dashboard({ welcomed, ...props }: Props) {
 }
 
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
-  const { session, redirect, workspaces, activeWorkspace, projects } = await loadWorkspaceData(
-    context
-  );
+  const { session, redirect, ...rest } = await loadWorkspaceData(context);
   if (redirect) return redirect;
 
   return {
     props: {
-      activeWorkspace,
-      workspaces,
-      projects,
+      ...rest,
       welcomed: !!session.dbUser.welcomedAt,
     } as Props,
   };

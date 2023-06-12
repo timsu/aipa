@@ -1,17 +1,14 @@
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 import prisma, { serialize } from "@/server/prisma";
-import { ProjectVisibility } from "@/types";
+import { ProjectVisibility, User, WorkspaceProps } from "@/types";
 import { Project, Workspace } from "@prisma/client";
 import { GetServerSidePropsContext, Redirect } from "next";
 import { Session } from "next-auth";
 
 type WorkspaceData = {
   session: Session;
-  workspaces: Workspace[];
-  activeWorkspace: string | null;
-  projects: Project[];
   redirect: { redirect: Redirect } | null;
-};
+} & WorkspaceProps;
 
 export const loadWorkspaceData = async (
   context: GetServerSidePropsContext
@@ -19,10 +16,12 @@ export const loadWorkspaceData = async (
   const session = await sessionOrRedirect(context);
   if (isRedirect(session))
     return {
+      userId: "",
       session: {} as Session,
       workspaces: [],
       activeWorkspace: null,
       projects: [],
+      people: [],
       redirect: session,
     };
 
@@ -41,9 +40,26 @@ export const loadWorkspaceData = async (
   const activeWorkspaceId = session.dbUser.activeWorkspace;
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
 
-  const projects = activeWorkspace
-    ? await prisma.project.findMany(allProjectsForWorkspace(activeWorkspace.id, session))
-    : [];
+  const [projects, people] = activeWorkspace
+    ? await Promise.all([
+        prisma.project.findMany(allProjectsForWorkspace(activeWorkspace.id, session)),
+        prisma.user.findMany({
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+          where: {
+            workspaces: {
+              some: {
+                workspaceId: activeWorkspace.id,
+                deletedAt: null,
+              },
+            },
+          },
+        }),
+      ])
+    : [[], []];
 
   const redirect =
     workspaces.length == 0
@@ -68,9 +84,11 @@ export const loadWorkspaceData = async (
 
   return {
     session,
+    userId,
     workspaces: serialize(workspaces),
     activeWorkspace: activeWorkspace?.id || null,
     projects: serialize(projects),
+    people: serialize(people),
     redirect,
   };
 };

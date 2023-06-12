@@ -14,6 +14,7 @@ import { Messages } from "../messages/Messages";
 import IssueIcon from "./IssueTypeIcon";
 import { IssueState, stateLabels } from "@/types";
 import { editorStore } from "@/stores/editorStore";
+import { workspaceStore } from "@/stores/workspaceStore";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -86,7 +87,9 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
           {stateLabels[issue.state]}
         </div>
         <div className="mt-2 rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
-          Not Assigned
+          {issue.assigneeId
+            ? `Assigned to ${workspaceStore.users.get()[issue.assigneeId]?.name}`
+            : "Not Assigned"}
         </div>
       </div>
 

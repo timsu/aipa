@@ -7,6 +7,7 @@ import { IssueType } from "@/types";
 import { classNames } from "@/lib/utils";
 import { useStore } from "@nanostores/react";
 import { issueStore } from "@/stores/issueStore";
+import { UserAvatar } from "../ui/Avatar";
 
 export default function IssueCard({
   issue,
@@ -57,16 +58,7 @@ export default function IssueCard({
             </p>
           </div>
         </div>
-        {issue.assigneeId && (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            width={32}
-            height={32}
-            className="flex-shrink-0 rounded-full bg-gray-300"
-            src={"https://i.pravatar.cc/32"}
-            alt="avatar"
-          />
-        )}
+        {issue.assigneeId && <UserAvatar userId={issue.assigneeId} />}
       </div>
     </div>
   );
