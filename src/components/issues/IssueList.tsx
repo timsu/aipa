@@ -24,10 +24,11 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
       {states.map((state) => {
         if (!groupedIssues[state]) return null;
         return (
-          <div key={state} className="mb-8">
+          <div key={state} className="mb-8 pb-8 border-b last:border-none">
             <div className="flex items-center">
               <h2 className="font-bold text-lg">
-                {state == IssueState.DRAFT ? "Drafts" : stateLabels[state]}
+                {state == IssueState.DRAFT ? "Drafts" : stateLabels[state]} (
+                {groupedIssues[state].length})
               </h2>
             </div>
             <div
