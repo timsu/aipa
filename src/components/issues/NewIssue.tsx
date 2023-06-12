@@ -27,6 +27,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
+  const [transitionSuccess, setTransitionSuccess] = useState<boolean | undefined>();
 
   const [issueType, setIssueType] = useState<IssueType>(types[0]);
 
@@ -70,31 +71,36 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     return false;
   }, [getIssueData, project, savedIssue]);
 
-  const createIssue = useCallback(async () => {
-    const issueData = getIssueData();
-    let issue: Issue | false | undefined = savedIssue;
-    if (
-      !savedIssue ||
-      Object.keys(issueData).find(
-        (key) => !deepEqual((savedIssue as any)[key], (issueData as any)[key])
-      )
-    ) {
-      issue = await saveDraft();
-    }
+  const createIssue = useCallback(
+    async (override?: boolean) => {
+      const issueData = getIssueData();
+      let issue: Issue | false | undefined = savedIssue;
+      if (
+        !savedIssue ||
+        Object.keys(issueData).find(
+          (key) => !deepEqual((savedIssue as any)[key], (issueData as any)[key])
+        )
+      ) {
+        issue = await saveDraft();
+      }
 
-    if (!issue) return;
+      if (!issue) return;
 
-    setSubmitting(true);
-    setSuccessMessage(null);
-    setError(null);
-    try {
-      await issueStore.transitionIssue(issue, IssueState.BACKLOG);
-    } catch (e) {
-      setError(unwrapError(e));
-    } finally {
-      setSubmitting(false);
-    }
-  }, [getIssueData, saveDraft, savedIssue]);
+      setSubmitting(true);
+      setSuccessMessage(null);
+      setError(null);
+      setTransitionSuccess(undefined);
+      try {
+        const result = await issueStore.transitionIssue(issue, IssueState.BACKLOG, override);
+        setTransitionSuccess(result);
+      } catch (e) {
+        setError(unwrapError(e));
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [getIssueData, saveDraft, savedIssue]
+  );
 
   const router = useRouter();
 
@@ -191,7 +197,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
           <Button
             data-tooltip-content="Validate and create your issue"
             data-tooltip-id="tooltip"
-            onClick={createIssue}
+            onClick={() => createIssue()}
             disabled={submitting}
           >
             Create Issue (⌘⏎)
@@ -209,6 +215,15 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
       </form>
 
       {savedIssue && <Messages />}
+
+      {transitionSuccess == false && (
+        <div
+          className="mt-4 cursor-pointer text-sm text-blue hover:underline"
+          onClick={() => createIssue(true)}
+        >
+          Force-create issue?
+        </div>
+      )}
     </div>
   );
 }

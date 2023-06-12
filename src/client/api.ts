@@ -53,7 +53,7 @@ class APIService {
 
   transitionIssue = async (
     issue: Issue,
-    updates: { state?: IssueState; type?: IssueType },
+    updates: { state?: IssueState; type?: IssueType; history?: ChatMessage[]; override?: boolean },
     onData: (data: ChatMessage | string) => void
   ): Promise<void> => {
     await this.stream(

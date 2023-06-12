@@ -2,11 +2,12 @@ import { atom, map } from "nanostores";
 
 import { Issue, Project } from "@prisma/client";
 import { projectStore } from "./projectStore";
-import { IssueMessage, IssueState } from "@/types";
+import { ChatMessage, IssueMessage, IssueState } from "@/types";
 import API from "@/client/api";
 import type { Types as Ably } from "ably";
 import { uiStore } from "./uiStore";
 import { logger } from "@/lib/logger";
+import { textContent } from "@/components/editor/Doc";
 
 type IssueMap = { [type: string]: Issue[] };
 
@@ -102,6 +103,7 @@ class IssueStore {
     else {
       this.activeIssue.set(issue);
       this.messages.set([]);
+      this.chatHistory = [];
 
       // update query param
       const url = new URL(window.location.href);
@@ -110,23 +112,42 @@ class IssueStore {
     }
   };
 
-  transitionIssue = async (issue: Issue, state: IssueState) => {
+  chatHistory: ChatMessage[] = [];
+
+  transitionIssue = async (issue: Issue, state: IssueState, override?: boolean) => {
     const current = this.activeIssue.get();
     if (isIssue(current) && issue.id != current.id) this.setActiveIssue(issue);
     this.messages.set([]);
 
     let success = false;
-    await API.transitionIssue(issue, { state }, (data: any) => {
-      const messages = this.messages.get();
-      if (isIssueMessage(data)) {
-        messages.push(data);
-        this.messages.set([...messages]);
-      } else if (data.success !== undefined) {
-        logger.info("transitionIssue", data);
-        success = data.success;
-        if (data.issue) this.issueUpdated(data.issue);
-      }
+    this.chatHistory.push({
+      role: "user",
+      content: `Update issue state to ${state}: ${issue.title}\n${
+        (issue.description && textContent(issue.description as any)) || "(no description)"
+      }`,
     });
+
+    await API.transitionIssue(
+      issue,
+      { state, history: this.chatHistory, override },
+      (data: any) => {
+        const messages = this.messages.get();
+        if (isIssueMessage(data)) {
+          messages.push(data);
+          this.messages.set([...messages]);
+          if (data.content != "Validating...") {
+            this.chatHistory.push({
+              role: "assistant",
+              content: data.content,
+            });
+          }
+        } else if (data.success !== undefined) {
+          logger.info("transitionIssue", data);
+          success = data.success;
+          if (data.issue) this.issueUpdated(data.issue);
+        }
+      }
+    );
 
     return success;
   };

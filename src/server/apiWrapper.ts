@@ -58,11 +58,13 @@ export function streamingApiWrapper(
       await func(req, session, res);
     } catch (err) {
       if (err instanceof ApiError) {
-        res.status(err.code).send(err.message);
+        streamWrite(res, { success: false, error: err.message, code: err.code });
       } else {
         logger.error(err);
-        res.status(500).send("Internal server error");
+        streamWrite(res, { success: false, error: "Internal server error", code: 500 });
       }
+    } finally {
+      res.end();
     }
   };
 }
