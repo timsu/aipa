@@ -60,7 +60,7 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
             <div
               className={classNames(
                 "my-2 -mx-4 grid grid-cols-1 gap-6",
-                activeIssue ? "" : "sm:grid-cols-2"
+                activeIssue ? "" : "sm:grid-cols-2 xl:grid-cols-3"
               )}
             >
               {groupedIssues[state].map((issue) => {
