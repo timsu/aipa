@@ -53,6 +53,7 @@ const IssueStatePlaceholders = {
 
 export default function Project({ id, ...props }: Props) {
   const [dirty, setDirty] = useUnsavedChanges();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   const { SubmitButton, setSubmitting } = useSubmitButton("Saving...");
@@ -64,6 +65,21 @@ export default function Project({ id, ...props }: Props) {
   }, []);
 
   const project = props.projects.find((p) => p.id === id);
+
+  useEffect(() => {
+    if (!project) return;
+    API.getValidations(project).then((validations) => {
+      if (!validations?.rules) return;
+      const form = formRef.current!;
+
+      const rules = validations.rules as { [key: string]: string };
+      for (const key of Object.keys(rules)) {
+        const value = rules[key];
+        if ((form.elements as any)[key]) (form.elements as any)[key].value = value;
+      }
+    });
+  }, [project]);
+
   if (!project) {
     return "Not found";
   }
@@ -90,6 +106,7 @@ export default function Project({ id, ...props }: Props) {
       setSubmitting(true);
       await API.saveValidations(project, updates);
       setDirty(false);
+      setSuccessMessage("Saved!");
     } catch (error) {
       console.error(error);
       toast.error("Failed to save validations");
@@ -246,10 +263,9 @@ export default function Project({ id, ...props }: Props) {
             </div>
           </div>
 
-          <div className="h-56">
-            <SubmitButton type="submit" className="mt-8">
-              Save
-            </SubmitButton>
+          <div className="mt-8 h-56">
+            <SubmitButton type="submit">Save</SubmitButton>
+            {successMessage && <div className="text-green-500 mt-4">{successMessage}</div>}
           </div>
         </form>
       </PageLayout>

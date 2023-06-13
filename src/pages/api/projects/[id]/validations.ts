@@ -7,7 +7,7 @@ import type { NextApiRequest } from "next";
 import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 import { getProject } from "@/server/loaders";
 
-export default authApiWrapper<ProjectValidation>(async function handler(
+export default authApiWrapper<ProjectValidation | null>(async function handler(
   req: NextApiRequest,
   session: Session
 ) {
@@ -26,19 +26,23 @@ export default authApiWrapper<ProjectValidation>(async function handler(
     },
   });
 
+  if (req.method == "GET") {
+    return validation;
+  }
+
   if (validation) {
     return await prisma.projectValidation.update({
       where: {
         id: validation.id,
       },
       data: {
-        ...data,
+        rules: data,
       },
     });
   } else {
     return await prisma.projectValidation.create({
       data: {
-        ...data,
+        rules: data,
         projectId: project.id,
       },
     });

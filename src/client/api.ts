@@ -63,6 +63,11 @@ class APIService {
     );
   };
 
+  getValidations = async (project: Project): Promise<ProjectValidation | null> => {
+    const response = await this.axios.get(`/projects/${project.id}/validations`);
+    return response.data;
+  };
+
   saveValidations = async (project: Project, updates: any): Promise<ProjectValidation> => {
     const response = await this.axios.post(`/projects/${project.id}/validations`, updates);
     return response.data;
