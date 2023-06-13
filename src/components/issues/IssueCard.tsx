@@ -3,7 +3,7 @@ import { Issue } from "@prisma/client";
 import Image from "next/image";
 import ProjectBadge from "../projects/ProjectBadge";
 import IssueIcon from "./IssueTypeIcon";
-import { IssueType } from "@/types";
+import { IssueState, IssueType } from "@/types";
 import { classNames } from "@/lib/utils";
 import { useStore } from "@nanostores/react";
 import { issueStore } from "@/stores/issueStore";
@@ -19,15 +19,21 @@ export default function IssueCard({
   const project = projectStore.projects.get().find((p) => p.id == issue.projectId)!;
 
   const bg =
-    issue.type == IssueType.STORY
+    issue.state == IssueState.DONE
       ? "bg-green-50 hover:bg-green-100"
+      : issue.state == IssueState.REVIEW
+      ? "bg-blue-50 hover:bg-blue-100"
       : issue.type == IssueType.BUG
       ? "bg-red-50 hover:bg-red-100"
-      : issue.type == IssueType.TASK
-      ? "bg-blue-50 hover:bg-blue-100"
       : issue.type == IssueType.EXPRIMENT
       ? "bg-purple-50 hover:bg-purple-100"
-      : "bg-gray-50 hover:bg-gray-100";
+      : issue.state == IssueState.IN_PROGRESS
+      ? "bg-yellow-50 hover:bg-yellow-100"
+      : issue.state == IssueState.TODO
+      ? "bg-gray-50 hover:bg-gray-100"
+      : issue.state == IssueState.DRAFT
+      ? "bg-orange-100 hover:bg-orange-200"
+      : "bg-white-50 hover:bg-gray-50";
 
   const isActive = useStore(issueStore.activeIssue)?.id == issue.id;
 

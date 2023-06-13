@@ -6,7 +6,7 @@ import Layout from "@/components/layout/Layout";
 import API from "@/client/api";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { logger } from "@/lib/logger";
 import Button from "@/components/ui/Button";
@@ -20,47 +20,23 @@ import { dashboardStore } from "@/stores/dashboardStore";
 import DashboardIssues from "./DashboardIssues";
 import { toast } from "react-toastify";
 import { unwrapError } from "@/lib/utils";
+import NewIssueButton from "@/components/issues/NewIssueButton";
+import RefreshButton from "@/components/ui/RefreshButton";
 
 type Props = {} & WorkspaceProps;
 
 export default function Issues({ ...props }: Props) {
-  const router = useRouter();
   useUI(props);
 
-  useEffect(() => {
-    refresh();
-  }, []);
-
-  const newIssue = async () => {
-    issueStore.newIssue();
-  };
-
-  const refresh = async () => {
-    try {
-      const issues = await API.listIssues({ filter: "all", workspaceId: props.activeWorkspace });
-      issueStore.loadIssues(issues);
-    } catch (error) {
-      logger.error(error);
-      toast.error(unwrapError(error));
-    }
-  };
-
-  const activeIssue = useStore(issueStore.activeIssue);
+  const refresh = useCallback(async () => {
+    const issues = await API.listIssues({ filter: "all", workspaceId: props.activeWorkspace });
+    issueStore.loadIssues(issues);
+  }, [props.activeWorkspace]);
 
   const headerButton = (
     <>
-      <div
-        className="mr-4 p-1 hover:bg-gray-100 rounded-md cursor-pointer"
-        onClick={refresh}
-        data-tooltip-content="Refresh"
-        data-tooltip-id="tooltip"
-      >
-        <ArrowPathIcon className="w-4 h-4" />
-      </div>
-
-      <Button onClick={newIssue} disabled={!!activeIssue && !activeIssue.id}>
-        New Issue
-      </Button>
+      <RefreshButton refresh={refresh} refreshOnLoad />
+      <NewIssueButton />
     </>
   );
 

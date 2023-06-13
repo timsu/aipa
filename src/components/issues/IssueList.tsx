@@ -4,18 +4,44 @@ import { dashboardStore } from "@/stores/dashboardStore";
 import { issueStore } from "@/stores/issueStore";
 import { IssueState, stateLabels } from "@/types";
 import { useStore } from "@nanostores/react";
+import { Issue } from "@prisma/client";
+import { useEffect, useRef } from "react";
+
+const states = [
+  IssueState.DRAFT,
+  IssueState.REVIEW,
+  IssueState.IN_PROGRESS,
+  IssueState.TODO,
+  IssueState.BACKLOG,
+];
 
 export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
   const activeIssue = useStore(issueStore.activeIssue);
   const groupedIssues = useStore(issueStore.groupedIssues);
 
-  const states = [
-    IssueState.DRAFT,
-    IssueState.REVIEW,
-    IssueState.IN_PROGRESS,
-    IssueState.TODO,
-    IssueState.BACKLOG,
-  ];
+  useEffect(() => {
+    const sortedIssues: Issue[] = [];
+    for (const state of states) {
+      if (!groupedIssues[state]) continue;
+      sortedIssues.push(...groupedIssues[state]);
+    }
+    const onKeyListener = (e: KeyboardEvent) => {
+      if (e.key == "ArrowUp" || e.key == "ArrowDown") {
+        const delta = e.key == "ArrowUp" ? -1 : 1;
+        e.preventDefault();
+        const currentIssueId = issueStore.activeIssue.get()?.id;
+        const index = sortedIssues.findIndex((i) => i.id === currentIssueId);
+        if (index != -1) {
+          const issue = sortedIssues[Math.max(Math.min(index + delta, sortedIssues.length - 1), 0)];
+          if (issue?.id != currentIssueId) issueStore.setActiveIssue(issue);
+        } else {
+          issueStore.setActiveIssue(sortedIssues[0]);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyListener);
+    return () => window.removeEventListener("keydown", onKeyListener);
+  }, [groupedIssues]);
 
   if (!Object.keys(groupedIssues).length) return emptyView;
 
@@ -37,13 +63,15 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
                 activeIssue ? "" : "sm:grid-cols-2"
               )}
             >
-              {groupedIssues[state].map((issue) => (
-                <IssueCard
-                  issue={issue}
-                  key={issue.id}
-                  onClick={(issue) => issueStore.setActiveIssue(issue)}
-                />
-              ))}
+              {groupedIssues[state].map((issue) => {
+                return (
+                  <IssueCard
+                    issue={issue}
+                    key={issue.id}
+                    onClick={(issue) => issueStore.setActiveIssue(issue)}
+                  />
+                );
+              })}
             </div>
           </div>
         );

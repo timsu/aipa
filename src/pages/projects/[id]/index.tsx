@@ -5,7 +5,7 @@ import Layout from "@/components/layout/Layout";
 import prisma, { serialize } from "@/server/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { Workspace } from "@prisma/client";
 import Button from "@/components/ui/Button";
 import PageLayout from "@/components/layout/PageLayout";
@@ -14,7 +14,7 @@ import API from "@/client/api";
 import useSubmitButton from "@/components/hooks/useSubmitButton";
 import { useRouter } from "next/router";
 import { loadWorkspaceData } from "@/server/loaders";
-import { IssueState, ProjectVisibility, WorkspaceProps } from "@/types";
+import { IssueState, IssueType, ProjectVisibility, WorkspaceProps, stateLabels } from "@/types";
 import { useUI } from "@/stores/uiStore";
 import { workspaceStore } from "@/stores/workspaceStore";
 import Checkbox from "@/components/inputs/Checkbox";
@@ -26,6 +26,21 @@ type Props = {
   id: string;
 } & WorkspaceProps;
 
+const IssueTypePlaceholders = {
+  [IssueType.STORY]: "e.g. be in the format 'As [persona], I want to [action] so that [goal].'",
+  [IssueType.BUG]:
+    "e.g. include reproduction steps, expected behavior, actual behavior, screenshots, etc.",
+  [IssueType.TASK]: "e.g. include a short description of the task",
+  [IssueType.EXPRIMENT]: "e.g. include a hypothesis & and experiment owner, or link to a doc",
+};
+
+const IssueStatePlaceholders = {
+  [IssueState.TODO]: "e.g. issues must have a description",
+  [IssueState.IN_PROGRESS]: "e.g. issues must have an assignee",
+  [IssueState.REVIEW]: "e.g. indicate how to test this issue",
+  [IssueState.DONE]: "e.g. ask about tests & mobile support",
+};
+
 export default function Project({ id, ...props }: Props) {
   useUI(props);
 
@@ -34,111 +49,150 @@ export default function Project({ id, ...props }: Props) {
     return "Not found";
   }
 
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const body = Object.fromEntries(formData.entries());
+  };
+
   return (
     <Layout>
       <Head>
         <title>{project.name}</title>
       </Head>
       <PageLayout title={project.name} fullSize>
-        <h2 className="font-semibold text-xl mb-4">Your Issue States</h2>
+        <form onSubmit={handleSubmit}>
+          <h2 className="font-semibold text-xl mb-4">Your Issue States</h2>
 
-        <ol className="flex flex-col gap-4 whitespace-pre-wrap list-decimal ml-4">
-          <li className="list-item">
-            <b>Backlog</b>- where unprioritized issues go
-          </li>
-          <li className="list-item">
-            <b>To Do</b>- issues selected to be worked on
-          </li>
-          <li className="list-item">
-            <b>In Progress</b>- issues actively being worked on
-          </li>
-          <li className="list-item4">
-            <b>Review</b>- validation after issue work is completed
-          </li>
-          <li className="list-item">
-            <b>Done</b>- issues that are completed and validated
-          </li>
-        </ol>
+          <ol className="flex flex-col gap-4 whitespace-pre-wrap list-decimal ml-4">
+            <li className="list-item">
+              <b>Backlog</b>- where unprioritized issues go
+            </li>
+            <li className="list-item">
+              <b>To Do</b>- issues selected to be worked on
+            </li>
+            <li className="list-item">
+              <b>In Progress</b>- issues actively being worked on
+            </li>
+            <li className="list-item4">
+              <b>Review</b>- validation after issue work is completed
+            </li>
+            <li className="list-item">
+              <b>Done</b>- issues that are completed and validated
+            </li>
+            <li className="list-item">
+              <b>Won&apos;t Fix</b>- issues that are closed without being completed
+            </li>
+          </ol>
 
-        <h2 className="font-semibold text-xl mt-8 mb-4">Validation Rules</h2>
+          {/* <Checkbox
+          id="transitionStates"
+          label="Enable transition states (pull-based workflow)"
+          description="- create additional states between each state (e.g. Ready for Progress, Ready for Review)"
+        /> */}
 
-        <div className="flex flex-col gap-4">
-          <h3 className="font-medium text-lg">Creating issues</h3>
-          <hr />
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1">
-              <div>General criteria</div>
-              <textarea className="w-full h-24 rounded-md p-2 border-gray-300">
-                issues must have good spelling and grammar. titles generally must be at least 3
-                words.
-              </textarea>
-              <div>Additional criteria for:</div>
-              {ISSUE_TYPES.map((type) => (
-                <div className="flex gap-4 items-center my-2" key={type}>
-                  <IssueTypeIcon type={type} />
-                  <div className="w-20">{titleCase(type)}</div>
-                  <TextField
-                    className="p-1 flex-1 border-gray-300"
-                    placeholder={`Criteria for ${type}s`}
-                  />
-                </div>
-              ))}
+          <h2 className="font-semibold text-xl mt-8 mb-4">Validation Rules</h2>
+
+          <div className="flex flex-col gap-4">
+            <h3 className="font-medium text-lg">Creating issues</h3>
+            <hr />
+            <div className="flex gap-4 flex-wrap">
+              <div className="flex-1">
+                <div>Criteria for all issues:</div>
+                <textarea
+                  className="w-full mt-2 h-14 rounded-md p-2 border-gray-300"
+                  placeholder="e.g. issues must have good spelling and grammar, and a clear title."
+                />
+                <div>Additional criteria for each issue type:</div>
+                {ISSUE_TYPES.map((type) => (
+                  <div className="flex gap-4 items-center my-2" key={type}>
+                    <IssueTypeIcon type={type} />
+                    <div className="w-20">{titleCase(type)}</div>
+                    <TextField
+                      className="p-1 flex-1 border-gray-300"
+                      placeholder={IssueTypePlaceholders[type]}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="w-56 xl:w-72">
+                <ul className="list-disc ml-4 mb-2 space-y-4">
+                  <li>Data available: issue title, description, type, and creator</li>
+                  <li>
+                    Clarify what is a requirement (e.g. issues MUST have...) or a suggestion. The
+                    system will be more flexible with suggestions than rules.
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div className="w-56 xl:w-72">
-              <div className="font-bold">Tips:</div>
-              <ul className="list-disc ml-4 mb-2 space-y-4">
-                <li>Data available: issue title, description, type, and creator</li>
-                <li>
-                  Distinguish between requirements (e.g. issues MUST have...) and suggestions. The
-                  system will be more flexible with suggestions than rules.
-                </li>
-              </ul>
+
+            <h3 className="font-medium text-lg mt-8">Work in progress limits</h3>
+            <hr />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <textarea
+                  className="w-full h-14 rounded-md p-2 border-gray-300"
+                  placeholder="e.g. Allow no more than one in-progress story per person. any number of bugs is ok."
+                />
+              </div>
+              <div className="w-56 xl:w-72">
+                <ul className="list-disc ml-4 mb-2 space-y-4">
+                  <li>Data available: issue details, all issues currently in progress</li>
+                </ul>
+              </div>
+            </div>
+
+            <h3 className="font-medium text-lg mt-8">Assigning & transitioning issues</h3>
+            <hr />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <div>When assigning an issue:</div>
+                <textarea
+                  className="w-full mt-2 h-14 rounded-md p-2 border-gray-300"
+                  placeholder="e.g. a message must be written to the assignee indicating what should be done"
+                />
+
+                <div>Additional criteria for transition to:</div>
+                {[IssueState.TODO, IssueState.IN_PROGRESS, IssueState.REVIEW, IssueState.DONE].map(
+                  (state) => (
+                    <div className="flex gap-4 items-center my-2" key={state}>
+                      <div className="w-20">{stateLabels[state]}</div>
+                      <TextField
+                        className="p-1 flex-1 border-gray-300"
+                        placeholder={
+                          IssueStatePlaceholders[state as keyof typeof IssueStatePlaceholders]
+                        }
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+
+              <div className="w-56 xl:w-72">
+                <ul className="list-disc ml-4 mb-2 space-y-4">
+                  <li>
+                    Data available: issue title, description, type, creator, assignee, current state
+                  </li>
+                  <li>
+                    If you specify rules for transitions and assignments, a conversation with the
+                    assistant may be required in order for users to proceed with their action.
+                  </li>
+                  <li>
+                    Clarify what is a question (e.g. ask about mobile support) vs a requirement
+                    (e.g. MUST support mobile)
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          <h3 className="font-medium text-lg mt-8">Work in progress</h3>
-          <hr />
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div>General criteria</div>
-              <textarea className="w-full h-24 rounded-md p-2 border-gray-300">
-                allow no more than one in-progress story per person. any number of bugs is ok.
-              </textarea>
-            </div>
-            <div className="w-56 xl:w-72">
-              <div className="font-bold">Tips:</div>
-              <ul className="list-disc ml-4 mb-2 space-y-4">
-                <li>Data available: current tickets on the board, issue details</li>
-              </ul>
-            </div>
+          <div className="h-56">
+            <Button type="submit" className="mt-8">
+              Save
+            </Button>
           </div>
-
-          <h3 className="font-medium text-lg mt-8">Assigning & transitioning issues</h3>
-          <hr />
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div>In general When assigning an issue:</div>
-              <textarea className="w-full h-24 rounded-md p-2 border-gray-300">
-                a message must be written to the assignee indicating what should be done
-              </textarea>
-              <div>When transitioning to &quot;in review&quot;:</div>
-              <textarea
-                className="w-full h-24 rounded-md p-2 border-gray-300"
-                placeholder="No rule specified"
-              />
-            </div>
-            <div className="w-56 xl:w-72">
-              <div className="font-bold">Tips:</div>
-              <ul className="list-disc ml-4 mb-2 space-y-4">
-                <li>Data available: issue title, description, type, creator, assignee</li>
-                <li>
-                  If you specify rules for transitions, a conversation with the assistant will be
-                  required.
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+        </form>
       </PageLayout>
     </Layout>
   );

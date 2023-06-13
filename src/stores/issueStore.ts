@@ -98,6 +98,8 @@ class IssueStore {
   };
 
   setActiveIssue = (issue: Issue) => {
+    if (!issue) return this.closeIssuePanel();
+
     const current = this.activeIssue.get();
     if (isIssue(current) && issue.id == current.id) this.closeIssuePanel();
     else {

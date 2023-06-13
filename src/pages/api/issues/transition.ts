@@ -44,15 +44,17 @@ export default streamingApiWrapper(async function handler(
       await applyUpdates(issue, { state }, res);
     } else if (issue.state == IssueState.DRAFT) {
       await validateCreateIssue(issue, state, res, history);
-    } else if (state == IssueState.IN_PROGRESS || state == IssueState.TODO) {
-      const updates: IssueUpdates = { state };
-      if (state == IssueState.IN_PROGRESS && !issue.assigneeId)
-        updates.assigneeId = session.user.id;
-      streamWrite(res, { role: "assistant", content: `State changed to ${stateLabels[state]}.` });
-      await applyUpdates(issue, updates, res);
     } else {
-      streamWrite(res, { role: "assistant", content: "TODO: validate this transition..." });
       const updates: IssueUpdates = { state };
+      if (
+        !issue.assigneeId &&
+        state != IssueState.BACKLOG &&
+        state != IssueState.TODO &&
+        state != IssueState.WONT_FIX
+      )
+        updates.assigneeId = session.user.id;
+      if (state == IssueState.DONE || state == IssueState.WONT_FIX) updates.resolvedAt = new Date();
+      streamWrite(res, { role: "assistant", content: `State changed to ${stateLabels[state]}.` });
       await applyUpdates(issue, updates, res);
     }
 
@@ -90,7 +92,9 @@ Only return result = PASS or FAIL`;
   
 Type: ${issue.type}
 Title: ${issue.title}
-Body: ${body}`;
+Body: ${body}
+
+Your JSON response:`;
 
   const messages: ChatMessage[] = [
     { role: "system", content: systemMessage },
@@ -129,7 +133,7 @@ Body: ${body}`;
   }
 }
 
-type IssueUpdates = { state?: IssueState; assigneeId?: string };
+type IssueUpdates = { state?: IssueState; assigneeId?: string; resolvedAt?: Date };
 
 async function applyUpdates(issue: Issue, updates: IssueUpdates, res: NextApiResponse) {
   // assign it to you

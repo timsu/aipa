@@ -19,6 +19,7 @@ import { workspaceStore } from "@/stores/workspaceStore";
 export default function ViewIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const issueList = useStore(issueStore.issues);
 
   const transition = async (newState: IssueState) => {
     setSubmitting(true);
@@ -46,6 +47,8 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const visibleInList = issueList.find((i) => i.id === issue.id);
 
   return (
     <div>
@@ -135,6 +138,27 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
             In Review
           </Button>
         )}
+        {issue.state == IssueState.REVIEW && (
+          <Button
+            data-tooltip-content="Complete this issue"
+            data-tooltip-id="tooltip"
+            onClick={() => transition(IssueState.DONE)}
+            disabled={submitting}
+          >
+            Mark Complete
+          </Button>
+        )}
+        {issue.state == IssueState.DONE && (
+          <Button
+            data-tooltip-content="Move back to 'In Progress'"
+            data-tooltip-id="tooltip"
+            onClick={() => transition(IssueState.IN_PROGRESS)}
+            disabled={submitting}
+            className="bg-gray-500 hover:bg-gray-700"
+          >
+            Un-complete
+          </Button>
+        )}
         <div className="flex-1"></div>
         <Button
           className="bg-red-700 hover:bg-red-900"
@@ -147,6 +171,10 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
       </div>
 
       <Messages />
+
+      {!visibleInList && (
+        <div className="mt-4">Note: this issue is not visible in the current issue list</div>
+      )}
     </div>
   );
 }
