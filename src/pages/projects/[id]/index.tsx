@@ -19,6 +19,7 @@ import {
   IssueType,
   ProjectVisibility,
   ValidationRules,
+  ValidationRuleset,
   WorkspaceProps,
   stateLabels,
 } from "@/types";
@@ -88,14 +89,16 @@ export default function Project({ id, ...props }: Props) {
     const form = formRef.current!;
     const formData = new FormData(form);
     const body = Object.fromEntries(formData.entries());
+
+    const rules: ValidationRuleset = {};
     for (const key of Object.keys(body)) {
-      const value = body[key];
-      if (typeof value === "string") body[key] = value.trim();
-      if (body[key] === "") {
-        delete body[key];
+      let value = body[key];
+      if (typeof value === "string") {
+        value = value.trim();
+        if (value) rules[key] = value;
       }
     }
-    return body;
+    return rules;
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -114,6 +117,21 @@ export default function Project({ id, ...props }: Props) {
       setSubmitting(false);
     }
   };
+
+  const testCreateIssue = () =>
+    issueStore.activeIssue.get()?.id
+      ? issueStore.closeIssuePanel()
+      : issueStore.dryRunIssue({}, async (issue) => {
+          const formData = getFormData();
+          console.log("dry running");
+          await issueStore.transitionIssue(
+            { ...issue, state: IssueState.DRAFT },
+            IssueState.BACKLOG,
+            false,
+            formData
+          );
+          console.log("validating", issue, formData);
+        });
 
   return (
     <Layout>
@@ -190,10 +208,7 @@ export default function Project({ id, ...props }: Props) {
               </div>
             </div>
 
-            <div
-              className="text-blue-500 hover:underline cursor-pointer"
-              onClick={() => issueStore.newIssue()}
-            >
+            <div className="text-blue-500 hover:underline cursor-pointer" onClick={testCreateIssue}>
               Test validation rules
             </div>
 

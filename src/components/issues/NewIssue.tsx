@@ -1,4 +1,4 @@
-import { isIssue, issueStore } from "@/stores/issueStore";
+import { ActiveIssue, isIssue, issueStore } from "@/stores/issueStore";
 import { ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import TextField from "../inputs/TextField";
 import { useStore } from "@nanostores/react";
@@ -19,10 +19,10 @@ import { useRouter } from "next/router";
 import { Messages } from "../messages/Messages";
 import { IssueTypeButton, ISSUE_TYPES } from "./IssueTypeButton";
 
-export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
+export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const project = useStore(projectStore.activeProject)!;
   const formRef = useRef<HTMLFormElement>(null);
-  const [savedIssue, setSavedIssue] = useState<Issue | undefined>(draftIssue);
+  const [savedIssue, setSavedIssue] = useState<Issue | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -32,10 +32,10 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const [issueType, setIssueType] = useState<IssueType>(ISSUE_TYPES[0]);
 
   useEffect(() => {
-    setTitle(draftIssue?.title || "");
-    setIssueType((draftIssue?.type as IssueType) || ISSUE_TYPES[0]);
-    setSavedIssue(draftIssue);
-    editorStore.editor?.commands.setContent((draftIssue?.description as Doc) || "");
+    setTitle(draftIssue.title || "");
+    setIssueType((draftIssue.type as IssueType) || ISSUE_TYPES[0]);
+    setSavedIssue(draftIssue.id ? draftIssue : undefined);
+    editorStore.editor?.commands.setContent((draftIssue.description as Doc) || "");
   }, [draftIssue]);
 
   const getIssueData = useCallback(() => {
@@ -75,7 +75,9 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
     async (override?: boolean) => {
       const issueData = getIssueData();
       let issue: Issue | false | undefined = savedIssue;
-      if (
+      if (draftIssue.dryRun) {
+        issue = issueData as Issue;
+      } else if (
         !savedIssue ||
         Object.keys(issueData).find(
           (key) => !deepEqual((savedIssue as any)[key], (issueData as any)[key])
@@ -91,15 +93,19 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
       setError(null);
       setTransitionSuccess(undefined);
       try {
-        const result = await issueStore.transitionIssue(issue, IssueState.BACKLOG, override);
-        setTransitionSuccess(result);
+        if (draftIssue.dryRun) {
+          await draftIssue.dryRun(issue);
+        } else {
+          const result = await issueStore.transitionIssue(issue, IssueState.BACKLOG, override);
+          setTransitionSuccess(result);
+        }
       } catch (e) {
         setError(unwrapError(e));
       } finally {
         setSubmitting(false);
       }
     },
-    [getIssueData, saveDraft, savedIssue]
+    [getIssueData, saveDraft, savedIssue, draftIssue]
   );
 
   const router = useRouter();
@@ -185,28 +191,41 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
         />
 
         <div className="flex gap-4">
-          <Button
-            className="bg-gray-500 hover:bg-gray-700"
-            data-tooltip-content="In a hurry? Create a draft issue and complete it later."
-            data-tooltip-id="tooltip"
-            onClick={saveDraft}
-            disabled={submitting}
-          >
-            Save Draft (⌘S)
-          </Button>
-          <Button
-            data-tooltip-content="Validate and create your issue"
-            data-tooltip-id="tooltip"
-            onClick={() => createIssue()}
-            disabled={submitting}
-          >
-            Create Issue (⌘⏎)
-          </Button>
-          <div className="flex-1"></div>
-          {savedIssue && (
-            <Button className="bg-red-700 hover:bg-red-900" onClick={deleteIssue}>
-              Discard Draft
+          {draftIssue.dryRun ? (
+            <Button
+              data-tooltip-content="Test issue creation rules"
+              data-tooltip-id="tooltip"
+              onClick={() => createIssue()}
+              disabled={submitting}
+            >
+              Dry Run (⌘⏎)
             </Button>
+          ) : (
+            <>
+              <Button
+                className="bg-gray-500 hover:bg-gray-700"
+                data-tooltip-content="In a hurry? Create a draft issue and complete it later."
+                data-tooltip-id="tooltip"
+                onClick={saveDraft}
+                disabled={submitting}
+              >
+                Save Draft (⌘S)
+              </Button>
+              <Button
+                data-tooltip-content="Validate and create your issue"
+                data-tooltip-id="tooltip"
+                onClick={() => createIssue()}
+                disabled={submitting}
+              >
+                Create Issue (⌘⏎)
+              </Button>
+              <div className="flex-1"></div>
+              {savedIssue && (
+                <Button className="bg-red-700 hover:bg-red-900" onClick={deleteIssue}>
+                  Discard Draft
+                </Button>
+              )}
+            </>
           )}
         </div>
 
@@ -214,7 +233,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
         {error && <div className="text-red-500">{error}</div>}
       </form>
 
-      {savedIssue && <Messages />}
+      <Messages />
 
       {transitionSuccess == false && (
         <div

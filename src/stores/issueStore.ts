@@ -2,7 +2,7 @@ import { atom, map } from "nanostores";
 
 import { Issue, Project } from "@prisma/client";
 import { projectStore } from "./projectStore";
-import { ChatMessage, IssueMessage, IssueState } from "@/types";
+import { ChatMessage, IssueMessage, IssueState, ValidationRuleset } from "@/types";
 import API from "@/client/api";
 import type { Types as Ably } from "ably";
 import { uiStore } from "./uiStore";
@@ -11,7 +11,7 @@ import { textContent } from "@/components/editor/Doc";
 
 type IssueMap = { [type: string]: Issue[] };
 
-type ActiveIssue = Issue & { dryRun?: boolean };
+export type ActiveIssue = Issue & { dryRun?: (issue: Issue) => Promise<void> };
 
 class IssueStore {
   // --- services
@@ -57,11 +57,13 @@ class IssueStore {
   };
 
   newIssue = () => {
+    this.closeIssuePanel();
     this.activeIssue.set({} as Issue);
   };
 
-  dryRunIssue = (props: Partial<Issue> = {}) => {
-    this.activeIssue.set({ ...props, dryRun: true } as ActiveIssue);
+  dryRunIssue = (props: Partial<Issue> = {}, onDryRun: (issue: Issue) => Promise<void>) => {
+    this.closeIssuePanel();
+    this.activeIssue.set({ ...props, dryRun: onDryRun } as ActiveIssue);
   };
 
   subscribeToIssue = (issue: Issue | null) => {
@@ -96,6 +98,8 @@ class IssueStore {
 
   closeIssuePanel = () => {
     this.activeIssue.set(null);
+    this.messages.set([]);
+    this.chatHistory = [];
 
     // update query param
     const url = new URL(window.location.href);
@@ -122,7 +126,12 @@ class IssueStore {
 
   chatHistory: ChatMessage[] = [];
 
-  transitionIssue = async (issue: Issue, state: IssueState, override?: boolean) => {
+  transitionIssue = async (
+    issue: Issue,
+    state: IssueState,
+    override?: boolean,
+    dryRun?: ValidationRuleset
+  ) => {
     const current = this.activeIssue.get();
     if (isIssue(current) && issue.id != current.id) this.setActiveIssue(issue);
     this.messages.set([]);
@@ -135,27 +144,34 @@ class IssueStore {
       }`,
     });
 
-    await API.transitionIssue(
-      issue,
-      { state, history: this.chatHistory, override },
-      (data: any) => {
-        const messages = this.messages.get();
-        if (isIssueMessage(data)) {
-          messages.push(data);
-          this.messages.set([...messages]);
-          if (data.content != "Validating...") {
-            this.chatHistory.push({
-              role: "assistant",
-              content: data.content,
-            });
-          }
-        } else if (data.success !== undefined) {
-          logger.info("transitionIssue", data);
-          success = data.success;
-          if (data.issue) this.issueUpdated(data.issue);
+    const onData = (data: any) => {
+      const messages = this.messages.get();
+      console.log("message", data);
+      if (isIssueMessage(data)) {
+        messages.push(data);
+        this.messages.set([...messages]);
+        if (data.content != "Validating...") {
+          this.chatHistory.push({
+            role: "assistant",
+            content: data.content,
+          });
         }
+      } else if (data.success !== undefined) {
+        logger.info("transitionIssue", data);
+        success = data.success;
+        if (data.issue) this.issueUpdated(data.issue);
       }
-    );
+    };
+
+    if (dryRun) {
+      await API.dryRun(
+        issue,
+        { state, history: this.chatHistory, override, rules: dryRun },
+        onData
+      );
+    } else {
+      await API.transitionIssue(issue, { state, history: this.chatHistory, override }, onData);
+    }
 
     return success;
   };
@@ -175,7 +191,8 @@ class IssueStore {
     }
 
     if (this.activeIssue.get()?.id === issue.id) {
-      this.activeIssue.set(issue);
+      const activeIssue = this.activeIssue.get();
+      this.activeIssue.set({ ...activeIssue, ...issue });
     }
   };
 }

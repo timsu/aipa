@@ -1,7 +1,14 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
 
 import { Issue, Project, ProjectValidation, User, Workspace } from "@prisma/client";
-import { IssueType, IssueState, SuccessResponse, ChatMessage } from "@/types";
+import {
+  IssueType,
+  IssueState,
+  SuccessResponse,
+  ChatMessage,
+  ValidationRules,
+  ValidationRuleset,
+} from "@/types";
 import { Resource, ResourceWithParent, SingleResource } from "./resource";
 import { logger } from "@/lib/logger";
 
@@ -53,7 +60,12 @@ class APIService {
 
   transitionIssue = async (
     issue: Issue,
-    updates: { state?: IssueState; type?: IssueType; history?: ChatMessage[]; override?: boolean },
+    updates: {
+      state?: IssueState;
+      type?: IssueType;
+      history?: ChatMessage[];
+      override?: boolean;
+    },
     onData: (data: ChatMessage | string) => void
   ): Promise<void> => {
     await this.stream(
@@ -61,6 +73,20 @@ class APIService {
       updates,
       onData
     );
+  };
+
+  dryRun = async (
+    issue: Issue,
+    updates: {
+      state?: IssueState;
+      type?: IssueType;
+      history?: ChatMessage[];
+      override?: boolean;
+      rules: ValidationRuleset;
+    },
+    onData: (data: ChatMessage | string) => void
+  ): Promise<void> => {
+    await this.stream(`/issues/dryRun`, { issue, ...updates }, onData);
   };
 
   getValidations = async (project: Project): Promise<ProjectValidation | null> => {

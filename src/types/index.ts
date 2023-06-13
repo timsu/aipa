@@ -87,3 +87,7 @@ export enum ValidationRules {
   ASSIGN = "assign",
   TRANSITION = "tran",
 }
+
+export type ValidationRuleset = {
+  [key: string]: string;
+};
