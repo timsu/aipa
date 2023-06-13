@@ -16,7 +16,7 @@ const issueTypes = {
   },
 };
 
-export const types = Object.keys(issueTypes) as IssueType[];
+export const ISSUE_TYPES = Object.keys(issueTypes) as IssueType[];
 
 type Props = { type: IssueType; selected?: boolean } & HTMLAttributes<HTMLButtonElement>;
 

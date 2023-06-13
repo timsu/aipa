@@ -1,23 +1,21 @@
-import { isIssue, issueStore } from "@/stores/issueStore";
-import { ChevronRightIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { issueStore } from "@/stores/issueStore";
+import { ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import TextField from "../inputs/TextField";
 import { useStore } from "@nanostores/react";
 import { projectStore } from "@/stores/projectStore";
 import ProjectBadge from "../projects/ProjectBadge";
 import EditorContainer from "../editor/EditorContainer";
 import Button from "../ui/Button";
-import { IssueState, IssueType } from "@/types";
+import { IssueType } from "@/types";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { classNames, titleCase, unwrapError } from "@/lib/utils";
+import { useCallback, useEffect, useState } from "react";
+import { titleCase, unwrapError } from "@/lib/utils";
 import { Issue } from "@prisma/client";
 import { editorStore } from "@/stores/editorStore";
 import API from "@/client/api";
 import { Doc } from "../editor/Doc";
-import { deepEqual } from "fast-equals";
-import { useRouter } from "next/router";
 import { Messages } from "../messages/Messages";
-import { IssueTypeButton, types } from "./IssueTypeButton";
+import { IssueTypeButton, ISSUE_TYPES } from "./IssueTypeButton";
 
 export default function EditIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -25,11 +23,11 @@ export default function EditIssue({ issue }: { issue: Issue }) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
-  const [issueType, setIssueType] = useState<IssueType>(types[0]);
+  const [issueType, setIssueType] = useState<IssueType>(ISSUE_TYPES[0]);
 
   useEffect(() => {
-    setTitle(issue?.title || "");
-    setIssueType((issue?.type as IssueType) || types[0]);
+    setTitle(issue.title);
+    setIssueType(issue.type as IssueType);
     editorStore.editor?.commands.setContent((issue?.description as Doc) || "");
   }, [issue]);
 
@@ -92,7 +90,7 @@ export default function EditIssue({ issue }: { issue: Issue }) {
         <div className="flex flex-wrap gap-1 sm:gap-2 xl:gap-3 items-center">
           <div>Issue Type:</div>
 
-          {types.map((type) => (
+          {ISSUE_TYPES.map((type) => (
             <IssueTypeButton
               key={type}
               type={type}

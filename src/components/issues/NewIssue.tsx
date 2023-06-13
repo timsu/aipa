@@ -17,7 +17,7 @@ import { Doc } from "../editor/Doc";
 import { deepEqual } from "fast-equals";
 import { useRouter } from "next/router";
 import { Messages } from "../messages/Messages";
-import { IssueTypeButton, types } from "./IssueTypeButton";
+import { IssueTypeButton, ISSUE_TYPES } from "./IssueTypeButton";
 
 export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -29,11 +29,11 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
   const [title, setTitle] = useState<string>("");
   const [transitionSuccess, setTransitionSuccess] = useState<boolean | undefined>();
 
-  const [issueType, setIssueType] = useState<IssueType>(types[0]);
+  const [issueType, setIssueType] = useState<IssueType>(ISSUE_TYPES[0]);
 
   useEffect(() => {
     setTitle(draftIssue?.title || "");
-    setIssueType((draftIssue?.type as IssueType) || types[0]);
+    setIssueType((draftIssue?.type as IssueType) || ISSUE_TYPES[0]);
     setSavedIssue(draftIssue);
     editorStore.editor?.commands.setContent((draftIssue?.description as Doc) || "");
   }, [draftIssue]);
@@ -157,7 +157,7 @@ export default function NewIssue({ draftIssue }: { draftIssue?: Issue }) {
         <div className="flex flex-wrap gap-1 sm:gap-2 xl:gap-3 items-center">
           <div>Issue Type:</div>
 
-          {types.map((type) => (
+          {ISSUE_TYPES.map((type) => (
             <IssueTypeButton
               key={type}
               type={type}
