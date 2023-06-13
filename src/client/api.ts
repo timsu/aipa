@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
 
-import { Issue, Project, User, Workspace } from "@prisma/client";
+import { Issue, Project, ProjectValidation, User, Workspace } from "@prisma/client";
 import { IssueType, IssueState, SuccessResponse, ChatMessage } from "@/types";
 import { Resource, ResourceWithParent, SingleResource } from "./resource";
 import { logger } from "@/lib/logger";
@@ -61,6 +61,11 @@ class APIService {
       updates,
       onData
     );
+  };
+
+  saveValidations = async (project: Project, updates: any): Promise<ProjectValidation> => {
+    const response = await this.axios.post(`/projects/${project.id}/validations`, updates);
+    return response.data;
   };
 
   stream = (

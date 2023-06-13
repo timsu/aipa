@@ -11,10 +11,12 @@ import { textContent } from "@/components/editor/Doc";
 
 type IssueMap = { [type: string]: Issue[] };
 
+type ActiveIssue = Issue & { dryRun?: boolean };
+
 class IssueStore {
   // --- services
 
-  activeIssue = atom<Issue | null>(null);
+  activeIssue = atom<ActiveIssue | null>(null);
 
   editingIssue = atom<boolean>(false);
 
@@ -56,6 +58,10 @@ class IssueStore {
 
   newIssue = () => {
     this.activeIssue.set({} as Issue);
+  };
+
+  dryRunIssue = (props: Partial<Issue> = {}) => {
+    this.activeIssue.set({ ...props, dryRun: true } as ActiveIssue);
   };
 
   subscribeToIssue = (issue: Issue | null) => {

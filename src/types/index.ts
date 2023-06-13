@@ -80,3 +80,10 @@ export type IssueMessage = {
   from?: string;
   content: string;
 };
+
+export enum ValidationRules {
+  CREATE = "create",
+  WIP = "wip",
+  ASSIGN = "assign",
+  TRANSITION = "tran",
+}

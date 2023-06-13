@@ -8,7 +8,7 @@ import Prisma, { Issue, Project, Workspace } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 import { IssueState } from "@/types";
-import { getProject } from ".";
+import { getProject } from "@/server/loaders";
 import { ablySendIssueUpdate } from "@/server/ably";
 
 export default authApiWrapper<Issue>(async function handler(req: NextApiRequest, session: Session) {

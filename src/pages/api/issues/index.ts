@@ -8,7 +8,7 @@ import Prisma, { Issue, Project, Workspace } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 import { IssueState, ProjectVisibility } from "@/types";
-import { allProjectsForWorkspace } from "@/server/loaders";
+import { allProjectsForWorkspace, getProject } from "@/server/loaders";
 
 export default authApiWrapper<Issue[] | Issue>(function handler(
   req: NextApiRequest,
@@ -121,41 +121,3 @@ async function create(session: Session, req: NextApiRequest): Promise<Issue> {
 
   return result;
 }
-
-export const getProject = async (projectId: string, session: Session) => {
-  if (!projectId) return null;
-
-  const workspaces = await prisma.workspace.findMany({
-    where: {
-      users: {
-        some: {
-          userId: session.user.id,
-        },
-      },
-    },
-  });
-
-  const project = await prisma.project.findFirst({
-    where: {
-      id: projectId,
-      workspaceId: {
-        in: workspaces.map((w) => w.id),
-      },
-      deletedAt: null,
-      OR: [
-        {
-          users: {
-            some: {
-              userId: session.user.id,
-            },
-          },
-        },
-        {
-          visibility: ProjectVisibility.ALL,
-        },
-      ],
-    },
-  });
-
-  return project;
-};

@@ -5,7 +5,7 @@ import { Issue } from "@prisma/client";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiError, authApiWrapper, streamWrite, streamingApiWrapper } from "@/server/apiWrapper";
-import { getProject } from ".";
+import { getProject } from "@/server/loaders";
 import { ChatMessage, IssueState, stateLabels } from "@/types";
 import { ablySendIssueMessage, ablySendIssueUpdate } from "@/server/ably";
 import { textContent } from "@/components/editor/Doc";

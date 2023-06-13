@@ -116,3 +116,41 @@ export const allProjectsForWorkspace = (workspaceId: string, session: Session) =
     },
   };
 };
+
+export const getProject = async (projectId: string, session: Session) => {
+  if (!projectId) return null;
+
+  const workspaces = await prisma.workspace.findMany({
+    where: {
+      users: {
+        some: {
+          userId: session.user.id,
+        },
+      },
+    },
+  });
+
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      workspaceId: {
+        in: workspaces.map((w) => w.id),
+      },
+      deletedAt: null,
+      OR: [
+        {
+          users: {
+            some: {
+              userId: session.user.id,
+            },
+          },
+        },
+        {
+          visibility: ProjectVisibility.ALL,
+        },
+      ],
+    },
+  });
+
+  return project;
+};

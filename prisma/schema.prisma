@@ -39,14 +39,14 @@ model WorkspaceUser {
 }
 
 model Project {
-  id           String        @id @default(cuid())
+  id           String              @id @default(cuid())
   remoteId     String?
   name         String
-  shortcode    String        @db.VarChar(6)
-  color        String        @db.VarChar(6)
-  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
+  shortcode    String              @db.VarChar(6)
+  color        String              @db.VarChar(6)
+  workspace    Workspace           @relation(fields: [workspaceId], references: [id])
   workspaceId  String
-  visibility   Int           @default(0)
+  visibility   Int                 @default(0)
   meta         Json?
   issues       Issue[]
   fields       IssueField[]
@@ -54,12 +54,24 @@ model Project {
   types        IssueType[]
   integrations Integration[]
   users        ProjectUser[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  validations  ProjectValidation[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
   archivedAt   DateTime?
   deletedAt    DateTime?
 
   @@map("projects")
+}
+
+model ProjectValidation {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  rules     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("project_validations")
 }
 
 model ProjectUser {
@@ -145,7 +157,7 @@ model Issue {
   description Json?
   type        String  @db.VarChar(20)
   number      Int
-  identifier   String  @db.VarChar(20) @default("")
+  identifier  String  @default("") @db.VarChar(20)
   state       String  @db.VarChar(30)
 
   fields      Json?

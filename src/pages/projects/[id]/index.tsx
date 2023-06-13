@@ -5,7 +5,7 @@ import Layout from "@/components/layout/Layout";
 import prisma, { serialize } from "@/server/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Workspace } from "@prisma/client";
 import Button from "@/components/ui/Button";
 import PageLayout from "@/components/layout/PageLayout";
@@ -14,13 +14,23 @@ import API from "@/client/api";
 import useSubmitButton from "@/components/hooks/useSubmitButton";
 import { useRouter } from "next/router";
 import { loadWorkspaceData } from "@/server/loaders";
-import { IssueState, IssueType, ProjectVisibility, WorkspaceProps, stateLabels } from "@/types";
+import {
+  IssueState,
+  IssueType,
+  ProjectVisibility,
+  ValidationRules,
+  WorkspaceProps,
+  stateLabels,
+} from "@/types";
 import { useUI } from "@/stores/uiStore";
 import { workspaceStore } from "@/stores/workspaceStore";
 import Checkbox from "@/components/inputs/Checkbox";
 import { ISSUE_TYPES } from "@/components/issues/IssueTypeButton";
 import IssueTypeIcon from "@/components/issues/IssueTypeIcon";
 import { titleCase } from "@/lib/utils";
+import { issueStore } from "@/stores/issueStore";
+import useUnsavedChanges from "@/components/hooks/useUnsavedChanges";
+import { toast } from "react-toastify";
 
 type Props = {
   id: string;
@@ -42,18 +52,50 @@ const IssueStatePlaceholders = {
 };
 
 export default function Project({ id, ...props }: Props) {
+  const [dirty, setDirty] = useUnsavedChanges();
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const { SubmitButton, setSubmitting } = useSubmitButton("Saving...");
+
   useUI(props);
+
+  useEffect(() => {
+    issueStore.closeIssuePanel();
+  }, []);
 
   const project = props.projects.find((p) => p.id === id);
   if (!project) {
     return "Not found";
   }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
+  const getFormData = () => {
+    const form = formRef.current!;
     const formData = new FormData(form);
     const body = Object.fromEntries(formData.entries());
+    for (const key of Object.keys(body)) {
+      const value = body[key];
+      if (typeof value === "string") body[key] = value.trim();
+      if (body[key] === "") {
+        delete body[key];
+      }
+    }
+    return body;
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const updates = getFormData();
+
+    try {
+      setSubmitting(true);
+      await API.saveValidations(project, updates);
+      setDirty(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to save validations");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -62,7 +104,7 @@ export default function Project({ id, ...props }: Props) {
         <title>{project.name}</title>
       </Head>
       <PageLayout title={project.name} fullSize>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} ref={formRef}>
           <h2 className="font-semibold text-xl mb-4">Your Issue States</h2>
 
           <ol className="flex flex-col gap-4 whitespace-pre-wrap list-decimal ml-4">
@@ -98,11 +140,13 @@ export default function Project({ id, ...props }: Props) {
             <h3 className="font-medium text-lg">Creating issues</h3>
             <hr />
             <div className="flex gap-4 flex-wrap">
-              <div className="flex-1">
+              <div className="flex-[4]">
                 <div>Criteria for all issues:</div>
                 <textarea
+                  name={ValidationRules.CREATE}
                   className="w-full mt-2 h-14 rounded-md p-2 border-gray-300"
                   placeholder="e.g. issues must have good spelling and grammar, and a clear title."
+                  onChange={() => setDirty(true)}
                 />
                 <div>Additional criteria for each issue type:</div>
                 {ISSUE_TYPES.map((type) => (
@@ -110,13 +154,15 @@ export default function Project({ id, ...props }: Props) {
                     <IssueTypeIcon type={type} />
                     <div className="w-20">{titleCase(type)}</div>
                     <TextField
+                      name={ValidationRules.CREATE + "-" + type}
                       className="p-1 flex-1 border-gray-300"
                       placeholder={IssueTypePlaceholders[type]}
+                      onChange={() => setDirty(true)}
                     />
                   </div>
                 ))}
               </div>
-              <div className="w-56 xl:w-72">
+              <div className="flex-1 min-w-[250px]">
                 <ul className="list-disc ml-4 mb-2 space-y-4">
                   <li>Data available: issue title, description, type, and creator</li>
                   <li>
@@ -127,16 +173,25 @@ export default function Project({ id, ...props }: Props) {
               </div>
             </div>
 
+            <div
+              className="text-blue-500 hover:underline cursor-pointer"
+              onClick={() => issueStore.newIssue()}
+            >
+              Test validation rules
+            </div>
+
             <h3 className="font-medium text-lg mt-8">Work in progress limits</h3>
             <hr />
             <div className="flex gap-4">
-              <div className="flex-1">
+              <div className="flex-[4]">
                 <textarea
+                  name={ValidationRules.WIP}
                   className="w-full h-14 rounded-md p-2 border-gray-300"
                   placeholder="e.g. Allow no more than one in-progress story per person. any number of bugs is ok."
+                  onChange={() => setDirty(true)}
                 />
               </div>
-              <div className="w-56 xl:w-72">
+              <div className="flex-1 min-w-[250px]">
                 <ul className="list-disc ml-4 mb-2 space-y-4">
                   <li>Data available: issue details, all issues currently in progress</li>
                 </ul>
@@ -146,11 +201,13 @@ export default function Project({ id, ...props }: Props) {
             <h3 className="font-medium text-lg mt-8">Assigning & transitioning issues</h3>
             <hr />
             <div className="flex gap-4">
-              <div className="flex-1">
+              <div className="flex-[4]">
                 <div>When assigning an issue:</div>
                 <textarea
+                  name={ValidationRules.ASSIGN}
                   className="w-full mt-2 h-14 rounded-md p-2 border-gray-300"
                   placeholder="e.g. a message must be written to the assignee indicating what should be done"
+                  onChange={() => setDirty(true)}
                 />
 
                 <div>Additional criteria for transition to:</div>
@@ -159,17 +216,19 @@ export default function Project({ id, ...props }: Props) {
                     <div className="flex gap-4 items-center my-2" key={state}>
                       <div className="w-20">{stateLabels[state]}</div>
                       <TextField
+                        name={ValidationRules.TRANSITION + "-" + state}
                         className="p-1 flex-1 border-gray-300"
                         placeholder={
                           IssueStatePlaceholders[state as keyof typeof IssueStatePlaceholders]
                         }
+                        onChange={() => setDirty(true)}
                       />
                     </div>
                   )
                 )}
               </div>
 
-              <div className="w-56 xl:w-72">
+              <div className="flex-1 min-w-[250px]">
                 <ul className="list-disc ml-4 mb-2 space-y-4">
                   <li>
                     Data available: issue title, description, type, creator, assignee, current state
@@ -188,9 +247,9 @@ export default function Project({ id, ...props }: Props) {
           </div>
 
           <div className="h-56">
-            <Button type="submit" className="mt-8">
+            <SubmitButton type="submit" className="mt-8">
               Save
-            </Button>
+            </SubmitButton>
           </div>
         </form>
       </PageLayout>
