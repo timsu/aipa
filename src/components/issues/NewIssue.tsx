@@ -115,10 +115,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
     setError(null);
     setSubmitting(true);
     try {
-      await API.issues.update(savedIssue.projectId!, savedIssue.id, { deletedAt: new Date() });
-      issueStore.closeIssuePanel();
-      // reload whatever view we're on
-      router.replace(router.asPath);
+      await issueStore.deleteIssue(savedIssue);
     } catch (e) {
       setError(unwrapError(e));
     } finally {
@@ -146,7 +143,11 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
         <ProjectBadge project={project} />
         <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-1" />
         <h2 className="font-bold text-xl flex-1">
-          {savedIssue ? `#${savedIssue.identifier} (draft)` : "New Issue"}
+          {draftIssue.dryRun
+            ? "Testing rules"
+            : savedIssue
+            ? `#${savedIssue.identifier} (draft)`
+            : "New Issue"}
         </h2>
 
         <button

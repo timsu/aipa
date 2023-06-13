@@ -123,14 +123,12 @@ export default function Project({ id, ...props }: Props) {
       ? issueStore.closeIssuePanel()
       : issueStore.dryRunIssue({}, async (issue) => {
           const formData = getFormData();
-          console.log("dry running");
           await issueStore.transitionIssue(
             { ...issue, state: IssueState.DRAFT },
             IssueState.BACKLOG,
             false,
             formData
           );
-          console.log("validating", issue, formData);
         });
 
   return (

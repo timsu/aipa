@@ -182,10 +182,13 @@ class IssueStore {
   };
 
   issueUpdated = (issue: Issue) => {
-    const issues = this.issues.get();
+    let issues = this.issues.get();
     const index = issues.findIndex((i) => i.id === issue.id);
     if (index > -1) {
       issues[index] = issue;
+      if (issue.deletedAt) {
+        issues = issues.filter((i) => i.id !== issue.id);
+      }
       this.issues.set([...issues]);
       this.splitIssues(issues);
     }
@@ -194,6 +197,12 @@ class IssueStore {
       const activeIssue = this.activeIssue.get();
       this.activeIssue.set({ ...activeIssue, ...issue });
     }
+  };
+
+  deleteIssue = async (issue: Issue) => {
+    await API.issues.update(issue.projectId!, issue.id, { deletedAt: new Date() });
+    this.issueUpdated(issue);
+    issueStore.closeIssuePanel();
   };
 }
 
