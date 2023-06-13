@@ -18,6 +18,7 @@ import { deepEqual } from "fast-equals";
 import { useRouter } from "next/router";
 import { Messages } from "../messages/Messages";
 import { IssueTypeButton, ISSUE_TYPES } from "./IssueTypeButton";
+import Checkbox from "@/components/inputs/Checkbox";
 
 export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -28,6 +29,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
   const [transitionSuccess, setTransitionSuccess] = useState<boolean | undefined>();
+  const [createAnother, setCreateAnother] = useState<boolean>(false);
 
   const [issueType, setIssueType] = useState<IssueType>(ISSUE_TYPES[0]);
 
@@ -48,28 +50,32 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
     return issue;
   }, [title, issueType]);
 
-  const saveDraft = useCallback(async () => {
-    setSubmitting(true);
-    const issue = getIssueData();
-    try {
-      let updatedIssue: Issue;
-      if (savedIssue) {
-        updatedIssue = await API.issues.update(savedIssue.projectId!, savedIssue.id, issue);
-        issueStore.issueUpdated(updatedIssue);
-      } else {
-        issue.state = IssueState.DRAFT;
-        updatedIssue = await API.issues.create(project, issue);
+  const saveDraft = useCallback(
+    async (partOfCreateIssue: boolean) => {
+      setSubmitting(true);
+      const issue = getIssueData();
+      try {
+        let updatedIssue: Issue;
+        if (savedIssue) {
+          updatedIssue = await API.issues.update(savedIssue.projectId!, savedIssue.id, issue);
+          issueStore.issueUpdated(updatedIssue);
+        } else {
+          issue.state = IssueState.DRAFT;
+          updatedIssue = await API.issues.create(project, issue);
+        }
+        setSuccessMessage("Draft saved.");
+        setSavedIssue(updatedIssue);
+        if (!partOfCreateIssue && createAnother) issueStore.newIssue();
+        return updatedIssue;
+      } catch (e) {
+        setError(unwrapError(e));
+      } finally {
+        setSubmitting(false);
       }
-      setSuccessMessage("Draft saved.");
-      setSavedIssue(updatedIssue);
-      return updatedIssue;
-    } catch (e) {
-      setError(unwrapError(e));
-    } finally {
-      setSubmitting(false);
-    }
-    return false;
-  }, [getIssueData, project, savedIssue]);
+      return false;
+    },
+    [getIssueData, project, savedIssue, createAnother]
+  );
 
   const createIssue = useCallback(
     async (override?: boolean) => {
@@ -83,7 +89,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
           (key) => !deepEqual((savedIssue as any)[key], (issueData as any)[key])
         )
       ) {
-        issue = await saveDraft();
+        issue = await saveDraft(true);
       }
 
       if (!issue) return;
@@ -98,6 +104,14 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
         } else {
           const result = await issueStore.transitionIssue(issue, IssueState.BACKLOG, override);
           setTransitionSuccess(result);
+          if (createAnother) {
+            issueStore.newIssue();
+            issueStore.addMessage({
+              role: "system",
+              content: "Issue created: " + issue.identifier,
+              createdAt: new Date(),
+            });
+          }
         }
       } catch (e) {
         setError(unwrapError(e));
@@ -105,7 +119,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
         setSubmitting(false);
       }
     },
-    [getIssueData, saveDraft, savedIssue, draftIssue]
+    [getIssueData, saveDraft, savedIssue, draftIssue, createAnother]
   );
 
   const router = useRouter();
@@ -130,7 +144,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
         createIssue();
       } else if (e.key == "s" && e.metaKey) {
         e.preventDefault();
-        saveDraft();
+        saveDraft(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -191,7 +205,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
           content={draftIssue?.description as Doc}
         />
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           {draftIssue.dryRun ? (
             <Button
               data-tooltip-content="Test issue creation rules"
@@ -207,7 +221,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
                 className="bg-gray-500 hover:bg-gray-700"
                 data-tooltip-content="In a hurry? Create a draft issue and complete it later."
                 data-tooltip-id="tooltip"
-                onClick={saveDraft}
+                onClick={() => saveDraft(false)}
                 disabled={submitting}
               >
                 Save Draft (⌘S)
@@ -220,6 +234,12 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
               >
                 Create Issue (⌘⏎)
               </Button>
+              <Checkbox
+                id="createAnother"
+                checked={createAnother}
+                onChange={(e) => setCreateAnother(e.target.checked)}
+                label="Create another?"
+              />
               <div className="flex-1"></div>
               {savedIssue && (
                 <Button className="bg-red-700 hover:bg-red-900" onClick={deleteIssue}>

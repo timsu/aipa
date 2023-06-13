@@ -7,6 +7,7 @@ import {
   HomeIcon,
   ListBulletIcon,
   MapIcon,
+  PlusIcon,
   UsersIcon,
   ViewColumnsIcon,
 } from "@heroicons/react/24/outline";
@@ -23,7 +24,6 @@ const navigation = [
   { name: "Boards", href: "/boards", icon: ViewColumnsIcon },
   { name: "Roadmap", href: "/roadmap", icon: MapIcon },
   { name: "Team", href: "/team", icon: UsersIcon },
-  { name: "Projects", href: "/projects", icon: FolderIcon },
 ];
 
 export default function Sidebar() {
@@ -41,9 +41,7 @@ export default function Sidebar() {
           <li>
             <ul role="list" className="-mx-2 space-y-1">
               {navigation.map((item) => {
-                const isActive =
-                  currentPath.startsWith(item.href) &&
-                  (item.href != "/projects" || router.route != "/projects/[id]");
+                const isActive = currentPath.startsWith(item.href);
                 return (
                   <li key={item.name}>
                     <Link
@@ -73,7 +71,17 @@ export default function Sidebar() {
           </li>
 
           <li>
-            <div className="text-sm font-semibold leading-6 text-gray-400">Your projects</div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold leading-6 text-gray-400">Your projects</div>
+              <Link
+                href="/projects/new"
+                className="hover:bg-gray-200 text-gray-500 cursor-pointer rounded-md p-2 -mr-2"
+                data-tooltip-content="New project"
+                data-tooltip-id="tooltip"
+              >
+                <PlusIcon className="h-4 w-4" />
+              </Link>
+            </div>
             <ul role="list" className="-mx-2 mt-2 space-y-1">
               {projects.map((project) => {
                 const href = "/projects/" + project.id;

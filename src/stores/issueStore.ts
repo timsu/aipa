@@ -61,6 +61,10 @@ class IssueStore {
     this.activeIssue.set({} as Issue);
   };
 
+  addMessage = (message: IssueMessage) => {
+    this.messages.set([...this.messages.get(), message]);
+  };
+
   dryRunIssue = (props: Partial<Issue> = {}, onDryRun: (issue: Issue) => Promise<void>) => {
     this.closeIssuePanel();
     this.activeIssue.set({ ...props, dryRun: onDryRun } as ActiveIssue);
@@ -145,11 +149,9 @@ class IssueStore {
     });
 
     const onData = (data: any) => {
-      const messages = this.messages.get();
       console.log("message", data);
       if (isIssueMessage(data)) {
-        messages.push(data);
-        this.messages.set([...messages]);
+        this.addMessage(data);
         if (data.content != "Validating...") {
           this.chatHistory.push({
             role: "assistant",

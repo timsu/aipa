@@ -16,7 +16,7 @@ export default function Roadmap({ ...props }: Props) {
 
   return (
     <Layout>
-      <PageLayout title="Roadmap">TODO</PageLayout>
+      <PageLayout title="Roadmap">TODO: put your issues on the calendar</PageLayout>
     </Layout>
   );
 }

@@ -69,10 +69,11 @@ export default function Project({ id, ...props }: Props) {
 
   useEffect(() => {
     if (!project) return;
+    const form = formRef.current!;
+    form.reset();
+
     API.getValidations(project).then((validations) => {
       if (!validations?.rules) return;
-      const form = formRef.current!;
-
       const rules = validations.rules as { [key: string]: string };
       for (const key of Object.keys(rules)) {
         const value = rules[key];

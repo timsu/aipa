@@ -16,7 +16,7 @@ export default function TeamScreen({ ...props }: Props) {
 
   return (
     <Layout>
-      <PageLayout title="Team">TODO</PageLayout>
+      <PageLayout title="Team">TODO: see the distribution of work across your team</PageLayout>
     </Layout>
   );
 }

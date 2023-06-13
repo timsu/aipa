@@ -18,6 +18,7 @@ import { ProjectVisibility, WorkspaceProps } from "@/types";
 import { useUI } from "@/stores/uiStore";
 import { workspaceStore } from "@/stores/workspaceStore";
 import ColorPicker, { randomColor } from "@/components/projects/ColorPicker";
+import { projectStore } from "@/stores/projectStore";
 
 type Props = WorkspaceProps;
 
@@ -60,14 +61,14 @@ export default function NewProject(props: Props) {
     try {
       setError(null);
       setSubmitting(true);
-      const project = await API.projects.create({
+      const project = await projectStore.createProject({
         name,
         shortcode: code,
         visibility,
         color,
         workspaceId,
       });
-      router.push("/projects/" + project.id + "/settings");
+      router.push("/projects/" + project.id);
     } catch (err: any) {
       setSubmitting(false);
       setError(err.message);
@@ -106,7 +107,7 @@ export default function NewProject(props: Props) {
             placeholder="PRJ"
             required
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
           />
           <div>Color theme:</div>
           <ColorPicker color={color} setColor={setColor} />

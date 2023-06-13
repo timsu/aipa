@@ -16,7 +16,7 @@ export default function BoardsScreen({ ...props }: Props) {
 
   return (
     <Layout>
-      <PageLayout title="Boards">TODO</PageLayout>
+      <PageLayout title="Boards">TODO: see your issues laid out in a Kanban-style board</PageLayout>
     </Layout>
   );
 }
