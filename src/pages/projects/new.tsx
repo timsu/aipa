@@ -19,6 +19,7 @@ import { useUI } from "@/stores/uiStore";
 import { workspaceStore } from "@/stores/workspaceStore";
 import ColorPicker, { randomColor } from "@/components/projects/ColorPicker";
 import { projectStore } from "@/stores/projectStore";
+import Select from "@/components/inputs/Select";
 
 type Props = WorkspaceProps;
 
@@ -105,10 +106,21 @@ export default function NewProject(props: Props) {
           <TextField
             name="shortcode"
             placeholder="PRJ"
+            className="w-56"
             required
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
           />
+
+          <div>Sync with:</div>
+          <Select className="border w-56">
+            <option>None</option>
+            <option>Jira</option>
+            <option>Trello</option>
+            <option>Linear</option>
+            <option>GitHub Issues</option>
+          </Select>
+
           <div>Color theme:</div>
           <ColorPicker color={color} setColor={setColor} />
 
