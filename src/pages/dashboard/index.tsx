@@ -9,7 +9,7 @@ import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 import { useCallback, useEffect } from "react";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { logger } from "@/lib/logger";
-import Button from "@/components/ui/Button";
+import Button, { ButtonLink } from "@/components/ui/Button";
 import { WorkspaceProps } from "@/types";
 import { loadWorkspaceData } from "@/server/loaders";
 import { useUI } from "@/stores/uiStore";
@@ -17,9 +17,9 @@ import PageLayout from "@/components/layout/PageLayout";
 import { issueStore } from "@/stores/issueStore";
 import { useStore } from "@nanostores/react";
 import { dashboardStore } from "@/stores/dashboardStore";
-import DashboardIssues from "./DashboardIssues";
 import NewIssueButton from "@/components/issues/NewIssueButton";
 import RefreshButton from "@/components/ui/RefreshButton";
+import IssueList from "@/components/issues/IssueList";
 
 type Props = {
   welcomed: boolean;
@@ -54,6 +54,23 @@ export default function Dashboard({ welcomed, ...props }: Props) {
         <DashboardIssues />
       </PageLayout>
     </Layout>
+  );
+}
+
+function DashboardIssues() {
+  const emptyView = (
+    <div className="block">
+      <div className="mb-8">
+        Nothing on your plate! Create a new issue or assign something to yourself.
+      </div>
+      <ButtonLink href="/issues">All Issues</ButtonLink>
+    </div>
+  );
+
+  return (
+    <>
+      <IssueList emptyView={emptyView} />
+    </>
   );
 }
 

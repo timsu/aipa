@@ -15,17 +15,14 @@ import { loadWorkspaceData } from "@/server/loaders";
 import { useUI } from "@/stores/uiStore";
 import PageLayout from "@/components/layout/PageLayout";
 import { issueStore } from "@/stores/issueStore";
-import { useStore } from "@nanostores/react";
-import { dashboardStore } from "@/stores/dashboardStore";
-import DashboardIssues from "./DashboardIssues";
-import { toast } from "react-toastify";
-import { unwrapError } from "@/lib/utils";
 import NewIssueButton from "@/components/issues/NewIssueButton";
 import RefreshButton from "@/components/ui/RefreshButton";
 
+import IssueList from "@/components/issues/IssueList";
+
 type Props = {} & WorkspaceProps;
 
-export default function Issues({ ...props }: Props) {
+export default function IssuesScreen({ ...props }: Props) {
   useUI(props);
 
   const refresh = useCallback(async () => {
@@ -43,9 +40,18 @@ export default function Issues({ ...props }: Props) {
   return (
     <Layout>
       <PageLayout title="All Issues" titleButtons={headerButton}>
-        <DashboardIssues />
+        <IssuesMain />
       </PageLayout>
     </Layout>
+  );
+}
+function IssuesMain() {
+  const emptyView = <div className="">No issues found. Create an issue to get started!</div>;
+
+  return (
+    <>
+      <IssueList emptyView={emptyView} />
+    </>
   );
 }
 
