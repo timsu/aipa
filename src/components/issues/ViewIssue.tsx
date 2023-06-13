@@ -15,6 +15,7 @@ import IssueIcon from "./IssueTypeIcon";
 import { IssueState, stateLabels } from "@/types";
 import { editorStore } from "@/stores/editorStore";
 import { workspaceStore } from "@/stores/workspaceStore";
+import IssueStateMenu from "@/components/issues/IssueStateMenu";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -81,15 +82,16 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
 
       <EditorContainer className="h-64 p-2" readonly content={issue.description as Doc} />
 
-      <div className="flex gap-4 items-center mb-4">
-        <div className="mt-2 rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
+      <div className="flex gap-4 items-center mb-4 mt-2">
+        <div className="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
           <IssueIcon type={issue.type} />
           {titleCase(issue.type)}
         </div>
-        <div className="mt-2 rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
-          {stateLabels[issue.state]}
-        </div>
-        <div className="mt-2 rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
+        <IssueStateMenu
+          issue={issue}
+          buttonClass="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer"
+        />
+        <div className="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
           {issue.assigneeId
             ? `Assigned to ${workspaceStore.users.get()[issue.assigneeId]?.name}`
             : "Not Assigned"}
@@ -135,7 +137,7 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
             onClick={() => transition(IssueState.REVIEW)}
             disabled={submitting}
           >
-            In Review
+            Move to Review
           </Button>
         )}
         {issue.state == IssueState.REVIEW && (
