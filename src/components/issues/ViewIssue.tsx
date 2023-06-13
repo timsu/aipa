@@ -163,7 +163,7 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
         )}
         <div className="flex-1"></div>
         <Button
-          className="bg-red-700 hover:bg-red-900"
+          className="bg-transparent text-red-700 hover:bg-red-50"
           data-tooltip-content="Delete this issue"
           data-tooltip-id="tooltip"
           onClick={deleteIssue}

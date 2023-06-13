@@ -3,24 +3,32 @@ import { issueStore } from "@/stores/issueStore";
 import { IssueState, stateLabels } from "@/types";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import { Issue } from "@prisma/client";
-import { HTMLAttributes, PropsWithChildren, useEffect, useState } from "react";
+import {
+  ButtonHTMLAttributes,
+  HTMLAttributes,
+  PropsWithChildren,
+  useEffect,
+  useState,
+} from "react";
 import { usePopper } from "react-popper";
 import { twMerge } from "tailwind-merge";
 
 export default function PopoverMenu({
   buttonLabel,
   buttonClass,
+  buttonProps,
   popoverClass,
   children,
   popperOptions = {},
 }: PropsWithChildren<{
   buttonLabel: string | React.ReactElement;
   buttonClass?: string;
+  buttonProps?: ButtonHTMLAttributes<HTMLButtonElement>;
   popoverClass?: string;
   popperOptions?: Parameters<typeof usePopper>[2];
 }>) {
   const [open, setOpen] = useState(false);
-  const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null);
+  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     placement: "bottom-start",
@@ -47,9 +55,14 @@ export default function PopoverMenu({
 
   return (
     <>
-      <div ref={setReferenceElement} className={buttonClass} onClick={() => setOpen((o) => !o)}>
+      <button
+        ref={setReferenceElement}
+        className={buttonClass}
+        {...buttonProps}
+        onClick={() => setOpen((o) => !o)}
+      >
         {buttonLabel}
-      </div>
+      </button>
       {open && (
         <div
           ref={setPopperElement}
@@ -76,7 +89,7 @@ export function PopoverSelectOption({
   return (
     <div
       className={twMerge(
-        selected ? "bg-indigo-600 text-white" : "text-gray-900 hover:bg-gray-200",
+        selected ? "bg-brand-600 text-white" : "text-gray-900 hover:bg-gray-200",
         "relative cursor-pointer select-none py-2 pl-8 pr-4",
         className
       )}

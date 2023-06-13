@@ -119,19 +119,15 @@ export default function EditIssue({ issue }: { issue: Issue }) {
 
         <div className="flex gap-4">
           <Button
-            data-tooltip-content="In a hurry? Create a draft issue and complete it later."
-            data-tooltip-id="tooltip"
-            onClick={save}
-            disabled={submitting}
-          >
-            Save (⌘S)
-          </Button>
-          <div className="flex-1"></div>
-          <Button
             className="bg-red-700 hover:bg-red-900"
             onClick={() => issueStore.editingIssue.set(false)}
           >
             Cancel Editing
+          </Button>
+          <div className="flex-1"></div>
+
+          <Button onClick={save} disabled={submitting}>
+            Save (⌘S)
           </Button>
         </div>
         {successMessage && <div className="text-green-500">{successMessage}</div>}

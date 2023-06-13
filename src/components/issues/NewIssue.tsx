@@ -19,6 +19,7 @@ import { useRouter } from "next/router";
 import { Messages } from "../messages/Messages";
 import { IssueTypeButton, ISSUE_TYPES } from "./IssueTypeButton";
 import Checkbox from "@/components/inputs/Checkbox";
+import ProjectPicker from "@/components/projects/ProjectPicker";
 
 export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -154,7 +155,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   return (
     <div>
       <div className="flex items-center">
-        <ProjectBadge project={project} />
+        <ProjectPicker project={project} />
         <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-1" />
         <h2 className="font-bold text-xl flex-1">
           {draftIssue.dryRun

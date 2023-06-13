@@ -54,7 +54,7 @@ export default function IssueCard({
             </h3>
           </div>
           <div className="flex items-center space-x-3 mt-1">
-            <span className="inline-flex flex-shrink-0 items-center rounded-full bg-green-50 px-1.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+            <span className="text-xs font-medium" style={{ color: `#${project.color}` }}>
               {project.shortcode}-{issue.number}
             </span>
 

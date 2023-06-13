@@ -137,7 +137,7 @@ export default function Project({ id, ...props }: Props) {
       <Head>
         <title>{project.name}</title>
       </Head>
-      <PageLayout title={project.name} fullSize>
+      <PageLayout title={"Project: " + project.name} fullSize>
         <form onSubmit={handleSubmit} ref={formRef}>
           <h2 className="font-semibold text-xl mb-4">Your Issue States</h2>
 
