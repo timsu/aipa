@@ -7,7 +7,7 @@ import { logger } from "@/lib/logger";
 import { Editor } from "@tiptap/core";
 import { Transaction } from "prosemirror-state";
 import { isChangeOrigin } from "@tiptap/extension-collaboration";
-import { Doc } from "@/components/editor/Doc";
+import { Doc, textContent } from "@/components/editor/Doc";
 import { JSONContent } from "@tiptap/react";
 
 const SAVE_INTERVAL = 5000;
@@ -97,6 +97,10 @@ class EditorStore {
 
   getDoc = () => {
     return (this.editor?.getJSON() as Doc) || { type: "doc", content: [] };
+  };
+
+  getText = () => {
+    return textContent(this.getDoc());
   };
 }
 

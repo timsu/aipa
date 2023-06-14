@@ -201,7 +201,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
         </div>
 
         <EditorContainer
-          className="h-64 rounded-md border border-gray-300 p-2"
+          className="h-64 rounded-md border border-gray-300 p-2 overflow-auto"
           placeholder="Issue Description"
           content={draftIssue?.description as Doc}
         />

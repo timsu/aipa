@@ -20,6 +20,7 @@ import { workspaceStore } from "@/stores/workspaceStore";
 import ColorPicker, { randomColor } from "@/components/projects/ColorPicker";
 import { projectStore } from "@/stores/projectStore";
 import Select from "@/components/inputs/Select";
+import useUnsavedChanges from "@/components/hooks/useUnsavedChanges";
 
 type Props = WorkspaceProps;
 
@@ -105,11 +106,11 @@ export default function NewProject(props: Props) {
           <div>Project key: (used for issue ids)</div>
           <TextField
             name="shortcode"
-            placeholder="PRJ"
+            placeholder="e.g. ENG"
             className="w-56"
             required
             value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            onChange={(e) => setCode(e.target.value.toUpperCase().substring(0, 5))}
           />
 
           <div>Sync with:</div>
