@@ -1,7 +1,7 @@
 import IssueCard from "@/components/issues/IssueCard";
 import { classNames } from "@/lib/utils";
 import { dashboardStore } from "@/stores/dashboardStore";
-import { issueStore } from "@/stores/issueStore";
+import { ActiveIssue, issueStore } from "@/stores/issueStore";
 import { IssueState, stateLabels } from "@/types";
 import { useStore } from "@nanostores/react";
 import { Issue } from "@prisma/client";
@@ -13,10 +13,12 @@ const states = [
   IssueState.IN_PROGRESS,
   IssueState.TODO,
   IssueState.BACKLOG,
+  IssueState.DONE,
+  IssueState.WONT_FIX,
+  IssueState.SUGGESTIONS,
 ];
 
 export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
-  const activeIssue = useStore(issueStore.activeIssue);
   const groupedIssues = useStore(issueStore.groupedIssues);
 
   useEffect(() => {
@@ -61,25 +63,33 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
                 {groupedIssues[state].length})
               </h2>
             </div>
-            <div
-              className={classNames(
-                "my-2 -mx-4 grid grid-cols-1 gap-1 sm:gap-6",
-                activeIssue ? "" : "sm:grid-cols-2 xl:grid-cols-3"
-              )}
-            >
-              {groupedIssues[state].map((issue) => {
-                return (
-                  <IssueCard
-                    issue={issue}
-                    key={issue.id}
-                    onClick={(issue) => issueStore.setActiveIssue(issue)}
-                  />
-                );
-              })}
-            </div>
+            <IssueGrid issues={groupedIssues[state]} />
           </div>
         );
       })}
     </>
+  );
+}
+
+export function IssueGrid({ issues }: { issues: Issue[] }) {
+  const activeIssue = useStore(issueStore.activeIssue);
+
+  return (
+    <div
+      className={classNames(
+        "my-2 -mx-4 grid grid-cols-1 gap-1 sm:gap-6",
+        activeIssue ? "" : "sm:grid-cols-2 xl:grid-cols-3"
+      )}
+    >
+      {issues.map((issue) => {
+        return (
+          <IssueCard
+            issue={issue}
+            key={issue.id}
+            onClick={(issue) => issueStore.setActiveIssue(issue)}
+          />
+        );
+      })}
+    </div>
   );
 }

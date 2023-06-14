@@ -39,10 +39,23 @@ class IssueStore {
 
     const params = new URLSearchParams(window.location.search);
     const issueQuery = params.get("issue");
-    if (issueQuery) {
+    if (issueQuery && !this.activeIssue.get()) {
       const issue = issues.find((issue) => issue.identifier === issueQuery);
       if (issue) {
         this.setActiveIssue(issue);
+      } else {
+        const [proj, number] = issueQuery.split("-");
+        const project = projectStore.projects.get().find((p) => p.shortcode === proj);
+        if (project) {
+          API.issues
+            .get(project.id, number)
+            .then((issue) => {
+              this.setActiveIssue(issue);
+            })
+            .catch((error) => {
+              logger.info("no issue found with id", issueQuery);
+            });
+        }
       }
     }
   };

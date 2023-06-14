@@ -55,6 +55,7 @@ export enum IssueState {
   REVIEW = "review",
   DONE = "done",
   WONT_FIX = "wont_fix",
+  SUGGESTIONS = "suggestions",
 }
 
 export const stateLabels: { [state: string]: string } = {
@@ -65,6 +66,7 @@ export const stateLabels: { [state: string]: string } = {
   [IssueState.REVIEW]: "In Review",
   [IssueState.DONE]: "Done",
   [IssueState.WONT_FIX]: "Won't Fix",
+  [IssueState.SUGGESTIONS]: "Suggestions",
 };
 
 export enum IssueType {

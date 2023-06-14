@@ -75,6 +75,32 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
         },
       },
     });
+  } else if (filter == "something-new") {
+    // return new suggested issues for user
+    const workspaceId = req.query.workspaceId as string;
+
+    const projects = await prisma.project.findMany({
+      select: {
+        id: true,
+      },
+      ...allProjectsForWorkspace(workspaceId, session),
+    });
+
+    issues = await prisma.issue.findMany({
+      where: {
+        assigneeId: null,
+        resolvedAt: null,
+        deletedAt: null,
+        state: {
+          in: [IssueState.BACKLOG, IssueState.TODO],
+        },
+        projectId: {
+          in: projects.map((p) => p.id),
+        },
+      },
+      orderBy: [{ state: "desc" }, { updatedAt: "desc" }],
+      take: 6,
+    });
   } else {
     throw new ApiError(400, "Unimplemented");
   }

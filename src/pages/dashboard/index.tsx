@@ -20,6 +20,7 @@ import { dashboardStore } from "@/stores/dashboardStore";
 import NewIssueButton from "@/components/issues/NewIssueButton";
 import RefreshButton from "@/components/ui/RefreshButton";
 import IssueList from "@/components/issues/IssueList";
+import SomethingNew from "@/pages/dashboard/SomethingNew";
 
 type Props = {
   welcomed: boolean;
@@ -52,6 +53,8 @@ export default function Dashboard({ welcomed, ...props }: Props) {
     <Layout>
       <PageLayout title="My Stuff" titleButtons={headerButton}>
         <DashboardIssues />
+
+        <SomethingNew />
       </PageLayout>
     </Layout>
   );

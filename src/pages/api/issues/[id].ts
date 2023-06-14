@@ -21,10 +21,14 @@ export default authApiWrapper<Issue>(async function handler(req: NextApiRequest,
   const project = await getProject(projectId, session);
   if (!project) throw new ApiError(404, "Project not found");
 
+  const idAsNumber = parseInt(id);
+  const criteria =
+    isNaN(idAsNumber) || idAsNumber.toString() != id ? { id } : { number: idAsNumber };
+
   const item = await prisma.issue.findFirst({
     where: {
-      id,
       projectId,
+      ...criteria,
     },
   });
   if (!item) throw new ApiError(404, "Not found");
