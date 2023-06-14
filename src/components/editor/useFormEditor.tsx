@@ -40,31 +40,33 @@ export default function useFormEditor(
   readonly: boolean = false,
   placeholder: string = ""
 ) {
-  const editor = useEditor({
-    editable: !readonly,
-    editorProps: {
-      attributes: {
-        className: "h-full doc",
+  const editor = useEditor(
+    {
+      editable: !readonly,
+      editorProps: {
+        attributes: {
+          className: "h-full doc",
+        },
       },
+      extensions: readonly
+        ? STATIC_EXTENSIONS
+        : [
+            ...STATIC_EXTENSIONS,
+            Placeholder.configure({
+              placeholder,
+            }),
+            SlashExtension,
+          ],
+      autofocus: !!initialContent,
     },
-    extensions: readonly
-      ? STATIC_EXTENSIONS
-      : [
-          ...STATIC_EXTENSIONS,
-          Placeholder.configure({
-            placeholder,
-          }),
-          SlashExtension,
-        ],
-    autofocus: !!initialContent,
-  });
+    [readonly]
+  );
 
   useEffect(() => {
     if (editor && initialContent) {
+      console.log("holy catman batman", initialContent);
       setTimeout(() => {
-        if (editor.state.doc.childCount <= 1) {
-          editor.commands.setContent(initialContent);
-        }
+        editor.commands.setContent(initialContent);
       }, 0);
     }
   }, [editor, initialContent]);

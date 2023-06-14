@@ -14,8 +14,7 @@ type Props = {
 };
 
 function EditorContainer({ content: initialContent, readonly, className, placeholder }: Props) {
-  const content = useRef<Doc>(initialContent || null);
-  const editor = useFormEditor(content.current, readonly, placeholder);
+  const editor = useFormEditor(initialContent || null, readonly, placeholder);
 
   useEffect(() => {
     if (!editor) return;

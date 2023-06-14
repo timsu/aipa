@@ -26,6 +26,11 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
       sortedIssues.push(...groupedIssues[state]);
     }
     const onKeyListener = (e: KeyboardEvent) => {
+      const target = e.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+      if ((target as HTMLElement).contentEditable == "true") return;
+      console.log(target);
+
       if (e.key == "ArrowUp" || e.key == "ArrowDown") {
         const delta = e.key == "ArrowUp" ? -1 : 1;
         e.preventDefault();

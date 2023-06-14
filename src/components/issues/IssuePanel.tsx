@@ -13,7 +13,7 @@ export default function IssuePanel() {
   if (!issue) return null;
 
   return (
-    <div className="border-l flex-1 py-4 px-4">
+    <div className="border-l flex-1 py-4 px-4 h-full overflow-auto">
       {!issue.id || issue.state == IssueState.DRAFT ? (
         <NewIssue draftIssue={issue} />
       ) : editing ? (
