@@ -76,10 +76,12 @@ export enum IssueType {
   EXPRIMENT = "experiment",
 }
 
-export type IssueMessage = {
+// message that can be displayed in the UI. does not have to come from backend
+export type UIMessage = {
+  id?: string;
   createdAt: Date;
   role: "user" | "assistant" | "system";
-  from?: string;
+  userId?: string;
   content: string;
 };
 

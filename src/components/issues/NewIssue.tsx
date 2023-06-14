@@ -21,6 +21,7 @@ import { IssueTypeButton, ISSUE_TYPES } from "./IssueTypeButton";
 import Checkbox from "@/components/inputs/Checkbox";
 import ProjectPicker from "@/components/projects/ProjectPicker";
 import useShortcut, { ctrlOrMeta } from "@/components/hooks/useShortcut";
+import { messageStore } from "@/stores/messageStore";
 
 export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -109,7 +110,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
           setTransitionSuccess(result);
           if (createAnother) {
             issueStore.newIssue();
-            issueStore.addMessage({
+            messageStore.addMessage({
               role: "system",
               content: "Issue created: " + issue.identifier,
               createdAt: new Date(),
@@ -248,7 +249,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
         {error && <div className="text-red-500">{error}</div>}
       </form>
 
-      <Messages />
+      {savedIssue && <Messages issue={savedIssue} />}
 
       {transitionSuccess == false && (
         <div

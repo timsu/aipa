@@ -8,7 +8,7 @@ import Prisma, { Issue, Project, Workspace } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 import { IssueState } from "@/types";
-import { getProject } from "@/server/loaders";
+import { getIssue, getProject } from "@/server/loaders";
 import { ablySendIssueUpdate } from "@/server/ably";
 
 export default authApiWrapper<Issue>(async function handler(req: NextApiRequest, session: Session) {
@@ -18,19 +18,7 @@ export default authApiWrapper<Issue>(async function handler(req: NextApiRequest,
   const id = req.query.id as string;
   const projectId = req.query.project_id as string;
 
-  const project = await getProject(projectId, session);
-  if (!project) throw new ApiError(404, "Project not found");
-
-  const idAsNumber = parseInt(id);
-  const criteria =
-    isNaN(idAsNumber) || idAsNumber.toString() != id ? { id } : { number: idAsNumber };
-
-  const item = await prisma.issue.findFirst({
-    where: {
-      projectId,
-      ...criteria,
-    },
-  });
+  const item = await getIssue(projectId, id, session);
   if (!item) throw new ApiError(404, "Not found");
 
   if (req.method == "GET") {

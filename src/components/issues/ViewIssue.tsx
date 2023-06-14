@@ -113,7 +113,7 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
         <ViewActions issue={issue} />
       )}
 
-      <Messages />
+      <Messages issue={issue} />
 
       <VisibleInList issue={issue} />
     </div>

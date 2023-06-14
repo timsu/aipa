@@ -154,3 +154,25 @@ export const getProject = async (projectId: string, session: Session) => {
 
   return project;
 };
+
+export const getIssue = async (projectId: string, issueId: string, session: Session) => {
+  if (!projectId || !issueId) return null;
+
+  const project = await getProject(projectId, session);
+  if (!project) return null;
+
+  const idAsNumber = parseInt(issueId);
+  const criteria =
+    isNaN(idAsNumber) || idAsNumber.toString() != issueId
+      ? { id: issueId }
+      : { number: idAsNumber };
+
+  const item = await prisma.issue.findFirst({
+    where: {
+      projectId,
+      ...criteria,
+    },
+  });
+
+  return item;
+};

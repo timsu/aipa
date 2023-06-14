@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
 
-import { Issue, Project, ProjectValidation, User, Workspace } from "@prisma/client";
+import { Issue, IssueComment, Project, ProjectValidation, User, Workspace } from "@prisma/client";
 import {
   IssueType,
   IssueState,
@@ -37,6 +37,12 @@ class APIService {
   public projects = new Resource<Project>(this, "projects");
 
   public issues = new ResourceWithParent<Project, Issue>(this, "project_id", "issues");
+
+  public issueMessages = new ResourceWithParent<Project, IssueComment>(
+    this,
+    "project_id",
+    "messages"
+  );
 
   getAblyTokenRequest = async (): Promise<string> => {
     const response = await this.axios.get("/ably/token");

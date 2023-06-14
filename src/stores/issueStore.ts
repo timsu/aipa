@@ -2,12 +2,13 @@ import { atom, map } from "nanostores";
 
 import { Issue, Project } from "@prisma/client";
 import { projectStore } from "./projectStore";
-import { ChatMessage, IssueMessage, IssueState, ValidationRuleset } from "@/types";
+import { ChatMessage, IssueState, ValidationRuleset } from "@/types";
 import API from "@/client/api";
 import type { Types as Ably } from "ably";
 import { uiStore } from "./uiStore";
 import { logger } from "@/lib/logger";
 import { textContent } from "@/components/editor/Doc";
+import { isUIMessage, messageStore } from "@/stores/messageStore";
 
 type IssueMap = { [type: string]: Issue[] };
 
@@ -17,8 +18,6 @@ class IssueStore {
   // --- services
 
   activeIssue = atom<ActiveIssue | null>(null);
-
-  messages = atom<IssueMessage[]>([]);
 
   subscription: { id: string; channel: Ably.RealtimeChannelCallbacks } | undefined;
 
@@ -77,10 +76,6 @@ class IssueStore {
     this.activeIssue.set({} as Issue);
   };
 
-  addMessage = (message: IssueMessage) => {
-    this.messages.set([...this.messages.get(), message]);
-  };
-
   dryRunIssue = (props: Partial<Issue> = {}, onDryRun: (issue: Issue) => Promise<void>) => {
     this.closeIssuePanel();
     this.activeIssue.set({ ...props, dryRun: onDryRun } as ActiveIssue);
@@ -103,7 +98,7 @@ class IssueStore {
           createdAt: new Date(),
           ...message.data,
         };
-        this.messages.set([...this.messages.get(), comment]);
+        messageStore.addMessage(comment);
       });
 
       channel.subscribe("update", (message) => {
@@ -118,7 +113,7 @@ class IssueStore {
 
   closeIssuePanel = () => {
     this.activeIssue.set(null);
-    this.messages.set([]);
+    messageStore.clear();
     this.chatHistory = [];
 
     // update query param
@@ -134,7 +129,7 @@ class IssueStore {
     if (isIssue(current) && issue.id == current.id) this.closeIssuePanel();
     else {
       this.activeIssue.set(issue);
-      this.messages.set([]);
+      messageStore.init(issue);
       this.chatHistory = [];
 
       // update query param
@@ -154,7 +149,8 @@ class IssueStore {
   ) => {
     const current = this.activeIssue.get();
     if (isIssue(current) && issue.id != current.id) this.setActiveIssue(issue);
-    this.messages.set([]);
+
+    messageStore.removeTransientMessages();
 
     let success = false;
     this.chatHistory.push({
@@ -166,8 +162,8 @@ class IssueStore {
 
     const onData = (data: any) => {
       console.log("message", data);
-      if (isIssueMessage(data)) {
-        this.addMessage(data);
+      if (isUIMessage(data)) {
+        messageStore.addMessage(data);
         if (data.content != "Validating...") {
           this.chatHistory.push({
             role: "assistant",
@@ -227,10 +223,6 @@ class IssueStore {
 
 export const isIssue = (issue: Issue | null | "new"): issue is Issue => {
   return issue !== null && typeof issue == "object";
-};
-
-export const isIssueMessage = (message: IssueMessage | string | any): message is IssueMessage => {
-  return message !== null && typeof message == "object" && !!message.content;
 };
 
 declare global {

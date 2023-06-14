@@ -1,4 +1,5 @@
 import { issueStore } from "@/stores/issueStore";
+import { messageStore } from "@/stores/messageStore";
 import { workspaceStore } from "@/stores/workspaceStore";
 import { useStore } from "@nanostores/react";
 import { KeyboardEvent, useState } from "react";
@@ -15,7 +16,7 @@ export default function ChatInput() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       console.log("send message", value);
-      issueStore.addMessage({ role: "user", content: value, createdAt: new Date() });
+      messageStore.postMessage("user", value);
       setValue("");
     }
   };
