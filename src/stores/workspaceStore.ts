@@ -9,6 +9,7 @@ class WorkspaceStore {
   workspaces = atom<Workspace[]>([]);
 
   users = map<{ [id: string]: User }>({});
+  userList = atom<User[]>([]);
 
   activeWorkspace = atom<Workspace | null>(null);
 
@@ -20,6 +21,8 @@ class WorkspaceStore {
   };
 
   initUsers = (users: User[], yourUser: string) => {
+    this.userList.set(users);
+
     const map: { [id: string]: User } = {};
     users.forEach((user) => {
       map[user.id] = user;
