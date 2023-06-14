@@ -38,6 +38,8 @@ class UIStore {
     }
     this.realtime.connection.once("connected", () => callback(this.realtime!));
   };
+
+  isSmallScreen = () => document.body.clientWidth < 640;
 }
 
 export function useUI(props: WorkspaceProps) {

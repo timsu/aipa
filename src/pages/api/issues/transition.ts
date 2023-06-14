@@ -87,6 +87,7 @@ export async function validateCreateIssue(
 ): Promise<boolean> {
   const generalRule = rules[ValidationRules.CREATE];
   const typeRule = rules[ValidationRules.CREATE + "-" + issue.type];
+  const description = rules[ValidationRules.DESCRIPTION];
 
   if (!generalRule && !typeRule) {
     return true;
@@ -105,7 +106,9 @@ Only valid results are PASS or FAIL`;
 
   const body = textContent(issue.description as any);
 
-  const prompt = `Please validate the following issue to be created. Our rules:
+  const prompt = `${
+    description ? `Project Description: ${description}\n\n` : ""
+  }Please validate the following issue to be created. Our rules:
 ${generalRule ? "For all issues: " + generalRule : ""}
 ${typeRule ? "For " + issue.type + ": " + typeRule : ""}
   

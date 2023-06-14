@@ -189,9 +189,10 @@ class IssueStore {
       if (issue.deletedAt) {
         issues = issues.filter((i) => i.id !== issue.id);
       }
-      this.issues.set([...issues]);
-      this.splitIssues(issues);
-    }
+    } else issues.push(issue);
+
+    this.issues.set([...issues]);
+    this.splitIssues(issues);
 
     if (this.activeIssue.get()?.id === issue.id) {
       const activeIssue = this.activeIssue.get();

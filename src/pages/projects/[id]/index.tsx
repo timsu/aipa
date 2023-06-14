@@ -102,7 +102,7 @@ export default function Project({ id, ...props }: Props) {
     return rules;
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: MouseEvent | FormEvent) => {
     e.preventDefault();
     const updates = getFormData();
 
@@ -132,13 +132,28 @@ export default function Project({ id, ...props }: Props) {
           );
         });
 
+  const titleButtons = !dirty ? null : (
+    <>
+      <Button onClick={handleSubmit}>Save</Button>
+    </>
+  );
+
   return (
     <Layout>
       <Head>
         <title>{project.name}</title>
       </Head>
-      <PageLayout title={"Project: " + project.name} fullSize>
+      <PageLayout title={"Project: " + project.name} fullSize titleButtons={titleButtons}>
         <form onSubmit={handleSubmit} ref={formRef}>
+          <h2 className="font-semibold text-xl mb-4">Description</h2>
+
+          <textarea
+            name={ValidationRules.DESCRIPTION}
+            className="w-full mb-2 h-20 rounded-md p-2 border-gray-300"
+            placeholder="Write a short description of the project to provide context to the AI when validating"
+            onChange={() => setDirty(true)}
+          />
+
           <h2 className="font-semibold text-xl mb-4">Your Issue States</h2>
 
           <ol className="flex flex-col gap-4 whitespace-pre-wrap list-decimal ml-4">

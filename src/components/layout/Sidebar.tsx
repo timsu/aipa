@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useStore } from "@nanostores/react";
 import { projectStore } from "@/stores/projectStore";
 import { useRouter } from "next/router";
+import { uiStore } from "@/stores/uiStore";
 
 const navigation = [
   { name: "My Stuff", href: "/dashboard", icon: HomeIcon },
@@ -30,6 +31,8 @@ export default function Sidebar() {
   const router = useRouter();
   const currentPath = router.asPath;
   const projects = useStore(projectStore.projects);
+
+  const onLinkClick = () => uiStore.isSmallScreen() && uiStore.sidebarVisible.set(false);
 
   return (
     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 h-full">
@@ -52,6 +55,7 @@ export default function Sidebar() {
                           : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
                         "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                       )}
+                      onClick={onLinkClick}
                     >
                       <item.icon
                         className={classNames(
@@ -96,6 +100,7 @@ export default function Sidebar() {
                           : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
                         "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                       )}
+                      onClick={onLinkClick}
                     >
                       <span
                         className={classNames(

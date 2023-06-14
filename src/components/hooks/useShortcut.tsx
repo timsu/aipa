@@ -18,5 +18,7 @@ export default function useShortcut(
   }, [keys, callback, withMeta]);
 }
 
-export const ctrlOrMeta =
-  typeof window !== "undefined" && window.navigator.platform.match("Mac") ? "⌘+" : "Ctrl+";
+const isMac = typeof window !== "undefined" && window.navigator.platform.match("Mac");
+
+/* WARNING! this is not available with SSR. If you get errors, put it in a useEffect */
+export const ctrlOrMeta = isMac ? "⌘+" : "Ctrl+";

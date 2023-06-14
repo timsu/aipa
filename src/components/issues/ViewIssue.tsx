@@ -124,9 +124,9 @@ const VisibleInList = ({ issue }: { issue: Issue }) => {
   const issueList = useStore(issueStore.issues);
   const visibleInList = issueList.find((i) => i.id === issue.id);
 
-  return visibleInList ? (
+  return visibleInList ? null : (
     <div className="mt-4">Note: this issue is not visible in the current issue list</div>
-  ) : null;
+  );
 };
 
 const EditActions = ({

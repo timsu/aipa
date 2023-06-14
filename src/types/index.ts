@@ -82,6 +82,7 @@ export type IssueMessage = {
 };
 
 export enum ValidationRules {
+  DESCRIPTION = "description",
   CREATE = "create",
   WIP = "wip",
   ASSIGN = "assign",
