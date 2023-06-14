@@ -20,6 +20,7 @@ import { Messages } from "../messages/Messages";
 import { IssueTypeButton, ISSUE_TYPES } from "./IssueTypeButton";
 import Checkbox from "@/components/inputs/Checkbox";
 import ProjectPicker from "@/components/projects/ProjectPicker";
+import useShortcut, { ctrlOrMeta } from "@/components/hooks/useShortcut";
 
 export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -28,14 +29,14 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [title, setTitle] = useState<string>("");
   const [transitionSuccess, setTransitionSuccess] = useState<boolean | undefined>();
   const [createAnother, setCreateAnother] = useState<boolean>(false);
+  const titleRef = useRef<HTMLInputElement>(null);
 
   const [issueType, setIssueType] = useState<IssueType>(ISSUE_TYPES[0]);
 
   useEffect(() => {
-    setTitle(draftIssue.title || "");
+    if (titleRef.current) titleRef.current.value = draftIssue.title || "";
     setIssueType((draftIssue.type as IssueType) || ISSUE_TYPES[0]);
     setSavedIssue(draftIssue.id ? draftIssue : undefined);
     editorStore.editor?.commands.setContent((draftIssue.description as Doc) || "");
@@ -46,10 +47,11 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
     setSuccessMessage(null);
     const description = editorStore.getDoc();
     const type = issueType;
+    const title = titleRef.current?.value;
 
     const issue: Partial<Issue> = { title, description, type };
     return issue;
-  }, [title, issueType]);
+  }, [issueType]);
 
   const saveDraft = useCallback(
     async (partOfCreateIssue: boolean) => {
@@ -123,8 +125,6 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
     [getIssueData, saveDraft, savedIssue, draftIssue, createAnother]
   );
 
-  const router = useRouter();
-
   const deleteIssue = async () => {
     if (!savedIssue) return;
     setError(null);
@@ -138,19 +138,13 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && e.metaKey) {
-        e.preventDefault();
-        createIssue();
-      } else if (e.key == "s" && e.metaKey) {
-        e.preventDefault();
-        saveDraft(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [createIssue, saveDraft]);
+  useShortcut(["s", "Enter"], (e) => {
+    if (e.key === "Enter") {
+      createIssue();
+    } else if (e.key == "s") {
+      saveDraft(false);
+    }
+  });
 
   return (
     <div>
@@ -193,8 +187,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
           <TextField
             name="title"
             autoFocus
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            ref={titleRef}
             className="text-lg border-gray-300"
             placeholder={titleCase(issueType) + " Title"}
           />
@@ -209,31 +202,31 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
         <div className="flex gap-4 items-center">
           {draftIssue.dryRun ? (
             <Button
-              data-tooltip-content="Test issue creation rules"
+              data-tooltip-content={`Test issue creation rules (${ctrlOrMeta}⏎)`}
               data-tooltip-id="tooltip"
               onClick={() => createIssue()}
               disabled={submitting}
             >
-              Dry Run (⌘⏎)
+              Dry Run
             </Button>
           ) : (
             <>
               <Button
                 className="bg-gray-500 hover:bg-gray-700"
-                data-tooltip-content="In a hurry? Create a draft issue and complete it later."
+                data-tooltip-content={`In a hurry? Create a draft issue and complete it later. (${ctrlOrMeta}S)`}
                 data-tooltip-id="tooltip"
                 onClick={() => saveDraft(false)}
                 disabled={submitting}
               >
-                Save Draft (⌘S)
+                Save Draft
               </Button>
               <Button
-                data-tooltip-content="Validate and create your issue"
+                data-tooltip-content={`Validate and create your issue (${ctrlOrMeta}⏎)`}
                 data-tooltip-id="tooltip"
                 onClick={() => createIssue()}
                 disabled={submitting}
               >
-                Create Issue (⌘⏎)
+                Create Issue
               </Button>
               <Checkbox
                 id="createAnother"

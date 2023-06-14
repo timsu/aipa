@@ -18,7 +18,7 @@ import { workspaceStore } from "@/stores/workspaceStore";
 import IssueStateMenu from "@/components/issues/IssueStateMenu";
 import TextField from "@/components/inputs/TextField";
 import API from "@/client/api";
-import useShortcut from "@/components/hooks/useShortcut";
+import useShortcut, { ctrlOrMeta } from "@/components/hooks/useShortcut";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -199,6 +199,13 @@ const EditActions = ({
   );
 };
 
+type Action = {
+  label: string;
+  transition: IssueState;
+  className?: string;
+  tooltip?: string;
+};
+
 const ViewActions = ({ issue }: { issue: Issue }) => {
   const [submitting, setSubmitting] = useState<boolean>(false);
 
@@ -223,70 +230,61 @@ const ViewActions = ({ issue }: { issue: Issue }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const actions: Action[] = [];
+
+  if (issue.state == IssueState.BACKLOG)
+    actions.push({ label: "Mark as To Do", transition: IssueState.TODO });
+
+  if (issue.state == IssueState.TODO || issue.state == IssueState.BACKLOG)
+    actions.push({
+      label: "Start Issue",
+      transition: IssueState.IN_PROGRESS,
+      tooltip: "Assign to you and move to 'In Progress'",
+    });
+
+  if (issue.state == IssueState.IN_PROGRESS)
+    actions.push({ label: "Start Reviewing", transition: IssueState.REVIEW });
+
+  if (issue.state == IssueState.TODO || issue.state == IssueState.IN_PROGRESS)
+    actions.push({
+      label: "Back to Backlog",
+      transition: IssueState.BACKLOG,
+      className: "bg-transparent hover:bg-gray-100 text-gray-700",
+    });
+
+  if (issue.state == IssueState.REVIEW)
+    actions.push({ label: "Mark Complete", transition: IssueState.DONE });
+
+  if (issue.state == IssueState.DONE)
+    actions.push({
+      label: "Un-complete",
+      transition: IssueState.IN_PROGRESS,
+      className: "bg-gray-500 hover:bg-gray-700",
+    });
+
+  useShortcut(["1", "2"], (e) => {
+    e.preventDefault();
+    const idx = parseInt(e.key) - 1;
+    if (actions.length >= idx) transition(actions[idx].transition);
+  });
+
   return (
     <div className="flex gap-4">
-      {issue.state == IssueState.BACKLOG && (
+      {actions.map(({ label, transition: state, className, tooltip }, index) => (
         <Button
-          data-tooltip-content="Add to the 'To Do' list"
+          key={label}
+          className={className}
+          data-tooltip-content={
+            (tooltip || `Transition to ${stateLabels[state]}`) + ` (${ctrlOrMeta + (index + 1)})`
+          }
           data-tooltip-id="tooltip"
-          onClick={() => transition(IssueState.TODO)}
+          onClick={() => transition(state)}
           disabled={submitting}
         >
-          Mark as To Do
+          {label}
         </Button>
-      )}
-      {(issue.state == IssueState.TODO || issue.state == IssueState.IN_PROGRESS) && (
-        <Button
-          className="bg-gray-500 hover:bg-gray-700"
-          data-tooltip-content="Move back to backlog"
-          data-tooltip-id="tooltip"
-          onClick={() => transition(IssueState.BACKLOG)}
-          disabled={submitting}
-        >
-          Back to Backlog
-        </Button>
-      )}
-      {(issue.state == IssueState.BACKLOG || issue.state == IssueState.TODO) && (
-        <Button
-          data-tooltip-content="Assign to you and move to 'In Progress'"
-          data-tooltip-id="tooltip"
-          onClick={() => transition(IssueState.IN_PROGRESS)}
-          disabled={submitting}
-        >
-          Start Issue
-        </Button>
-      )}
-      {issue.state == IssueState.IN_PROGRESS && (
-        <Button
-          data-tooltip-content="Mark as 'Review'"
-          data-tooltip-id="tooltip"
-          onClick={() => transition(IssueState.REVIEW)}
-          disabled={submitting}
-        >
-          Move to Review
-        </Button>
-      )}
-      {issue.state == IssueState.REVIEW && (
-        <Button
-          data-tooltip-content="Complete this issue"
-          data-tooltip-id="tooltip"
-          onClick={() => transition(IssueState.DONE)}
-          disabled={submitting}
-        >
-          Mark Complete
-        </Button>
-      )}
-      {issue.state == IssueState.DONE && (
-        <Button
-          data-tooltip-content="Move back to 'In Progress'"
-          data-tooltip-id="tooltip"
-          onClick={() => transition(IssueState.IN_PROGRESS)}
-          disabled={submitting}
-          className="bg-gray-500 hover:bg-gray-700"
-        >
-          Un-complete
-        </Button>
-      )}
+      ))}
+
       <div className="flex-1"></div>
       <Button
         className="bg-transparent text-red-700 hover:bg-red-50"
