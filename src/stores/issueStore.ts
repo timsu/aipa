@@ -18,8 +18,6 @@ class IssueStore {
 
   activeIssue = atom<ActiveIssue | null>(null);
 
-  editingIssue = atom<boolean>(false);
-
   messages = atom<IssueMessage[]>([]);
 
   subscription: { id: string; channel: Ably.RealtimeChannelCallbacks } | undefined;

@@ -64,7 +64,6 @@ export default function useFormEditor(
 
   useEffect(() => {
     if (editor && initialContent) {
-      console.log("holy catman batman", initialContent);
       setTimeout(() => {
         editor.commands.setContent(initialContent);
       }, 0);

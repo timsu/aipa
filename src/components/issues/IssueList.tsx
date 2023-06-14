@@ -29,7 +29,6 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
       const target = e.target;
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
       if ((target as HTMLElement).contentEditable == "true") return;
-      console.log(target);
 
       if (e.key == "ArrowUp" || e.key == "ArrowDown") {
         const delta = e.key == "ArrowUp" ? -1 : 1;

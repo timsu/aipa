@@ -18,14 +18,21 @@ import { workspaceStore } from "@/stores/workspaceStore";
 import IssueStateMenu from "@/components/issues/IssueStateMenu";
 import TextField from "@/components/inputs/TextField";
 import API from "@/client/api";
+import useShortcut from "@/components/hooks/useShortcut";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
-  const issueList = useStore(issueStore.issues);
   const [editing, setEditing] = useState<boolean>(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
-  const visibleInList = issueList.find((i) => i.id === issue.id);
+  useShortcut(
+    ["Escape"],
+    (e: KeyboardEvent) => {
+      if (editing) setEditing(false);
+      else issueStore.closeIssuePanel();
+    },
+    false
+  );
 
   return (
     <div>
@@ -34,12 +41,6 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
         <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-1" />
         <h2 className="text-xl flex-1">{issue.identifier}</h2>
 
-        <button
-          className="text-gray-500 hover:text-gray-700 mr-4"
-          onClick={() => issueStore.editingIssue.set(true)}
-          data-tooltip-content="Edit issue"
-          data-tooltip-id="tooltip"
-        ></button>
         <button
           className="text-gray-500 hover:text-gray-700"
           onClick={() => issueStore.closeIssuePanel()}
@@ -114,12 +115,19 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
 
       <Messages />
 
-      {!visibleInList && (
-        <div className="mt-4">Note: this issue is not visible in the current issue list</div>
-      )}
+      <VisibleInList issue={issue} />
     </div>
   );
 }
+
+const VisibleInList = ({ issue }: { issue: Issue }) => {
+  const issueList = useStore(issueStore.issues);
+  const visibleInList = issueList.find((i) => i.id === issue.id);
+
+  return visibleInList ? (
+    <div className="mt-4">Note: this issue is not visible in the current issue list</div>
+  ) : null;
+};
 
 const EditActions = ({
   issue,
@@ -145,7 +153,6 @@ const EditActions = ({
     try {
       const updatedIssue = await API.issues.update(issue.projectId!, issue.id, updates);
       setSuccessMessage("Saved.");
-      issueStore.editingIssue.set(false);
       issueStore.issueUpdated(updatedIssue);
       setEditing(false);
       return updatedIssue;
