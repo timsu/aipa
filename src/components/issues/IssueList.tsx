@@ -54,7 +54,7 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
       {states.map((state) => {
         if (!groupedIssues[state]) return null;
         return (
-          <div key={state} className="mb-8 pb-8 border-b last:border-none">
+          <div key={state} className="mb-4 pb-4 sm:mb-8 sm:pb-8 border-b last:border-none">
             <div className="flex items-center">
               <h2 className="font-bold text-lg">
                 {state == IssueState.DRAFT ? "Drafts" : stateLabels[state]} (
@@ -63,7 +63,7 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
             </div>
             <div
               className={classNames(
-                "my-2 -mx-4 grid grid-cols-1 gap-6",
+                "my-2 -mx-4 grid grid-cols-1 gap-1 sm:gap-6",
                 activeIssue ? "" : "sm:grid-cols-2 xl:grid-cols-3"
               )}
             >

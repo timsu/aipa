@@ -26,6 +26,7 @@ export default function IssuesScreen({ ...props }: Props) {
   useUI(props);
 
   const refresh = useCallback(async () => {
+    issueStore.init();
     const issues = await API.listIssues({ filter: "all", workspaceId: props.activeWorkspace });
     issueStore.loadIssues(issues);
   }, [props.activeWorkspace]);

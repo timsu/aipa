@@ -228,8 +228,8 @@ export default function Project({ id, ...props }: Props) {
 
             <h3 className="font-medium text-lg mt-8">Work in progress limits</h3>
             <hr />
-            <div className="flex gap-4">
-              <div className="flex-[4]">
+            <div className="flex gap-4 flex-wrap">
+              <div className="flex-[4] min-w-[200px]">
                 <textarea
                   name={ValidationRules.WIP}
                   className="w-full h-14 rounded-md p-2 border-gray-300"
@@ -246,7 +246,7 @@ export default function Project({ id, ...props }: Props) {
 
             <h3 className="font-medium text-lg mt-8">Assigning & transitioning issues</h3>
             <hr />
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               <div className="flex-[4]">
                 <div>When assigning an issue:</div>
                 <textarea

@@ -30,3 +30,14 @@ global.window?.window.addEventListener("keydown", function (event) {
     debugger;
   }
 });
+
+declare global {
+  interface Window {
+    ethereum: {};
+  }
+}
+
+if (process.env.NODE_ENV == "development" && global.window) {
+  // for brave browser
+  global.window.ethereum = {};
+}

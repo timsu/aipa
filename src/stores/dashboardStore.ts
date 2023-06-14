@@ -14,6 +14,7 @@ class DashboardStore {
 
   load = async () => {
     try {
+      issueStore.init();
       const issues = await API.listIssues({ filter: "mystuff" });
       issueStore.loadIssues(issues);
     } catch (error) {

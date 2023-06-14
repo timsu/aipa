@@ -177,7 +177,7 @@ const EditActions = ({
 
   return (
     <>
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-4 mb-4 flex-wrap">
         <Button onClick={save} disabled={submitting}>
           Save (⌘S)
         </Button>
@@ -269,7 +269,7 @@ const ViewActions = ({ issue }: { issue: Issue }) => {
   });
 
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-4 flex-wrap">
       {actions.map(({ label, transition: state, className, tooltip }, index) => (
         <Button
           key={label}

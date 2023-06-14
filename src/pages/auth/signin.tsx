@@ -24,7 +24,11 @@ export default function SignInPage({ csrfToken, providers }: Props) {
     // validate email
     if (!email || !email.includes("@")) return;
 
-    await signIn("email", { email });
+    if (process.env.NODE_ENV === "development") {
+      await signIn("credentials", { email, token: "dev" });
+    } else {
+      await signIn("email", { email });
+    }
   };
 
   return (

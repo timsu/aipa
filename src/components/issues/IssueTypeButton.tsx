@@ -2,6 +2,7 @@ import { IssueType } from "@/types";
 import { ButtonHTMLAttributes, HTMLAttributes } from "react";
 import { twMerge } from "tailwind-merge";
 import IssueTypeIcon from "./IssueTypeIcon";
+import { classNames } from "@/lib/utils";
 
 const issueTypes = {
   [IssueType.STORY]: {
@@ -34,7 +35,9 @@ export function IssueTypeButton({ type, selected, ...rest }: Props) {
       )}
     >
       <IssueTypeIcon type={type} />
-      <span className="hidden lg:inline">{issueTypes[type]?.label}</span>
+      <span className={classNames(selected ? "" : "hidden lg:inline")}>
+        {issueTypes[type]?.label}
+      </span>
     </button>
   );
 }

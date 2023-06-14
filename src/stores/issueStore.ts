@@ -28,6 +28,11 @@ class IssueStore {
 
   // --- actions
 
+  init = async () => {
+    this.issues.set([]);
+    this.groupedIssues.set({});
+  };
+
   loadIssues = async (issues: Issue[]) => {
     this.issues.set(issues);
     this.splitIssues(issues);

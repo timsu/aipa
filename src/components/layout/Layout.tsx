@@ -25,7 +25,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       )}
       <Header />
       <main className="flex-1 overflow-scroll flex">{children}</main>
-      <Tooltip id="tooltip" />
+      <Tooltip id="tooltip" className="hidden sm:block" />
       <ToastContainer />
     </div>
   );

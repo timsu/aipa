@@ -199,7 +199,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
           content={draftIssue?.description as Doc}
         />
 
-        <div className="flex gap-4 items-center">
+        <div className="flex flex-wrap gap-4 items-center">
           {draftIssue.dryRun ? (
             <Button
               data-tooltip-content={`Test issue creation rules (${ctrlOrMeta}⏎)`}
