@@ -48,6 +48,7 @@ const IssueTypePlaceholders = {
 const IssueStatePlaceholders = {
   [IssueState.TODO]: "e.g. issues must have a description",
   [IssueState.IN_PROGRESS]: "e.g. issues must have an assignee",
+  [IssueState.BLOCKED]: "e.g. must indicate how to unblock",
   [IssueState.REVIEW]: "e.g. indicate how to test this issue",
   [IssueState.DONE]: "e.g. ask about tests & mobile support",
 };
@@ -257,21 +258,25 @@ export default function Project({ id, ...props }: Props) {
                 />
 
                 <div>Additional criteria for transition to:</div>
-                {[IssueState.TODO, IssueState.IN_PROGRESS, IssueState.REVIEW, IssueState.DONE].map(
-                  (state) => (
-                    <div className="flex gap-4 items-center my-2" key={state}>
-                      <div className="w-20">{stateLabels[state]}</div>
-                      <TextField
-                        name={ValidationRules.TRANSITION + "-" + state}
-                        className="p-1 flex-1 border-gray-300"
-                        placeholder={
-                          IssueStatePlaceholders[state as keyof typeof IssueStatePlaceholders]
-                        }
-                        onChange={() => setDirty(true)}
-                      />
-                    </div>
-                  )
-                )}
+                {[
+                  IssueState.TODO,
+                  IssueState.IN_PROGRESS,
+                  IssueState.BLOCKED,
+                  IssueState.REVIEW,
+                  IssueState.DONE,
+                ].map((state) => (
+                  <div className="flex gap-4 items-center my-2" key={state}>
+                    <div className="w-20">{stateLabels[state]}</div>
+                    <TextField
+                      name={ValidationRules.TRANSITION + "-" + state}
+                      className="p-1 flex-1 border-gray-300"
+                      placeholder={
+                        IssueStatePlaceholders[state as keyof typeof IssueStatePlaceholders]
+                      }
+                      onChange={() => setDirty(true)}
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className="flex-1 min-w-[250px]">

@@ -6,9 +6,10 @@ import { messageStore } from "@/stores/messageStore";
 import { workspaceStore } from "@/stores/workspaceStore";
 import { useStore } from "@nanostores/react";
 import { Issue } from "@prisma/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function Messages({ issue }: { issue: Issue }) {
+  const [editing, setEditing] = useState(false);
   const messages = useStore(messageStore.messages);
   const users = useStore(workspaceStore.users);
 
@@ -18,7 +19,15 @@ export function Messages({ issue }: { issue: Issue }) {
 
   return (
     <div className="my-4">
-      <ChatInput />
+      {editing ? (
+        <ChatInput />
+      ) : (
+        <TextField
+          className="text-base w-full border-gray-300"
+          onClick={() => setEditing(true)}
+          placeholder="Type a message..."
+        />
+      )}
       <div className="mt-4 flex flex-col-reverse gap-4">
         {messages.map((message, i) => (
           <MessageBubble
