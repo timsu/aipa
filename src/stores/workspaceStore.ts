@@ -10,6 +10,7 @@ class WorkspaceStore {
 
   users = map<{ [id: string]: User }>({});
   userList = atom<User[]>([]);
+  pendingUsers = atom<User[]>([]);
 
   activeWorkspace = atom<Workspace | null>(null);
 

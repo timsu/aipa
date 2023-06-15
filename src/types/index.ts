@@ -9,7 +9,7 @@ export type ChatMessage = {
   content: string;
 };
 
-export type User = { id: string; name: string | null; image?: string | null };
+export type User = { id: string; name: string | null; image?: string | null; role?: string | null };
 
 export type UserMeta = {
   from?: string; // send from email
@@ -122,3 +122,10 @@ export const priorityLabels = {
   [Priority.LOW]: "Low",
   [Priority.LOWEST]: "Lowest",
 };
+
+export enum WorkspaceRole {
+  OWNER = "owner",
+  ADMIN = "admin",
+  MEMBER = "member",
+  GUEST = "guest",
+}

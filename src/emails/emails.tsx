@@ -1,12 +1,10 @@
 import { render } from "@react-email/render";
 import WelcomeEmail from "../../emails/WelcomeEmail";
 import { sendEmail } from "@/server/sendEmail";
-import SendForm from "@/SendForm";
-import ResponseReceived from "@/ResponseReceived";
 import { logger } from "@/lib/logger";
 import VerifyEmail from "@/VerifyEmail";
-import FirstFormEmail from "@/FirstFormEmail";
 import { PRODUCT } from "@/types";
+import SendInvite from "@/SendInvite";
 
 const TAG = "[emails]";
 
@@ -31,17 +29,6 @@ class Emails {
     });
   }
 
-  async sendFirstForm(email: string) {
-    this.logEmail("sendFirstForm", email);
-
-    await sendEmail({
-      to: email,
-      from: this.defaultFrom,
-      subject: "You filled out your first form!",
-      html: render(FirstFormEmail()),
-    });
-  }
-
   async verifyEmail(email: string, url: string) {
     this.logEmail("verifyEmail", email);
 
@@ -53,31 +40,14 @@ class Emails {
     });
   }
 
-  async sendForm(email: string, fromUser: string, fromEmail: string, title: string, path: string) {
-    this.logEmail("sendForm", email, fromUser, title, path);
-
-    const props = {
-      fromUser,
-      title,
-      path,
-    };
-    await sendEmail({
-      to: email,
-      from: this.formatFrom(fromUser),
-      replyTo: fromEmail,
-      subject: "Response Requested: " + title,
-      html: render(SendForm(props)),
-    });
-  }
-
-  async responseReceived(
+  async sendInvite(
     email: string,
     fromUser: string,
     fromEmail: string,
     title: string,
     path: string
   ) {
-    this.logEmail("responseReceived", email, fromUser, title, path);
+    this.logEmail("sendInvite", email, fromUser, title, path);
 
     const props = {
       fromUser,
@@ -88,8 +58,8 @@ class Emails {
       to: email,
       from: this.formatFrom(fromUser),
       replyTo: fromEmail,
-      subject: "Response Received: " + title,
-      html: render(ResponseReceived(props)),
+      subject: `Please join ${title} on ${PRODUCT}`,
+      html: render(SendInvite(props)),
     });
   }
 

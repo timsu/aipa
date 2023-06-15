@@ -146,18 +146,19 @@ export default function Project({ id, ...props }: Props) {
       </Head>
       <PageLayout title={"Project: " + project.name} fullSize titleButtons={titleButtons}>
         <form onSubmit={handleSubmit} ref={formRef}>
-          <h2 className="font-semibold text-xl mb-4">Description</h2>
-
+          <h2 className="font-semibold text-xl mb-4 rounded-md py-2 px-4 -mx-4 bg-brand-200">
+            Description
+          </h2>
           <textarea
             name={ValidationRules.DESCRIPTION}
-            className="w-full mb-2 h-20 rounded-md p-2 border-gray-300"
+            className="w-full mb-2 h-14 rounded-md p-2 border-gray-300"
             placeholder="Write a short description of the project to provide context to the AI when validating"
             onChange={() => setDirty(true)}
           />
-
-          <h2 className="font-semibold text-xl mb-4">Your Issue States</h2>
-
-          <ol className="flex flex-col gap-4 whitespace-pre-wrap list-decimal ml-4">
+          <h2 className="font-semibold text-xl mb-4 rounded-md py-2 px-4 -mx-4 bg-brand-200">
+            Your Issue States
+          </h2>
+          <ol className="flex flex-col gap-4 whitespace-pre-wrap list-decimal ml-4 mb-8">
             <li className="list-item">
               <b>Backlog</b>- where unprioritized issues go
             </li>
@@ -177,15 +178,9 @@ export default function Project({ id, ...props }: Props) {
               <b>Won&apos;t Fix</b>- issues that are closed without being completed
             </li>
           </ol>
-
-          {/* <Checkbox
-          id="transitionStates"
-          label="Enable transition states (pull-based workflow)"
-          description="- create additional states between each state (e.g. Ready for Progress, Ready for Review)"
-        /> */}
-
-          <h2 className="font-semibold text-xl mt-8 mb-4">Validation Rules</h2>
-
+          <h2 className="font-semibold text-xl mb-4 rounded-md py-2 px-4 -mx-4 bg-brand-200">
+            Validation Rules
+          </h2>
           <div className="flex flex-col gap-4">
             <h3 className="font-medium text-lg">Creating issues</h3>
             <hr />
@@ -296,7 +291,6 @@ export default function Project({ id, ...props }: Props) {
               </div>
             </div>
           </div>
-
           <div className="mt-8 h-56">
             <SubmitButton type="submit">Save</SubmitButton>
             {successMessage && <div className="text-green-500 mt-4">{successMessage}</div>}
