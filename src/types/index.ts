@@ -1,6 +1,6 @@
 import { Project, Workspace } from "@prisma/client";
 
-export const PRODUCT = "Pomme";
+export const PRODUCT = "Teamstory";
 
 export type Model = "3.5" | "4";
 
