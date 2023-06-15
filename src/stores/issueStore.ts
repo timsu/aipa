@@ -190,7 +190,12 @@ class IssueStore {
     return success;
   };
 
-  updateIssue = async (issue: Issue) => {
+  updateIssue = async (issue: Issue, updates: Partial<Issue>) => {
+    const newIssue = await API.issues.update(issue.projectId!, issue.id, updates);
+    this.issueUpdated(newIssue);
+  };
+
+  reloadIssue = async (issue: Issue) => {
     const newIssue = await API.issues.get(issue.projectId!, issue.id);
     this.issueUpdated(newIssue);
   };

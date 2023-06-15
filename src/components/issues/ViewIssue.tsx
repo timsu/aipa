@@ -20,6 +20,7 @@ import TextField from "@/components/inputs/TextField";
 import API from "@/client/api";
 import useShortcut, { ctrlOrMeta } from "@/components/hooks/useShortcut";
 import { SidebarButton } from "@/components/layout/PageLayout";
+import IssueAssigneeMenu from "@/components/issues/IssueAssigneeMenu";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -102,11 +103,10 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
           issue={issue}
           buttonClass="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer"
         />
-        <div className="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
-          {issue.assigneeId
-            ? `Assigned to ${workspaceStore.users.get()[issue.assigneeId]?.name}`
-            : "Not Assigned"}
-        </div>
+        <IssueAssigneeMenu
+          issue={issue}
+          buttonClass="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer"
+        />
       </div>
 
       {editing ? (
