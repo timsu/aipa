@@ -215,8 +215,9 @@ class IssueStore {
   };
 
   deleteIssue = async (issue: Issue) => {
-    await API.issues.update(issue.projectId!, issue.id, { deletedAt: new Date() });
+    issue.deletedAt = new Date();
     this.issueUpdated(issue);
+    await API.issues.update(issue.projectId!, issue.id, { deletedAt: new Date() });
     issueStore.closeIssuePanel();
   };
 }
