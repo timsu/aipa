@@ -3,12 +3,14 @@ import ChatInput from "@/components/messages/ChatInput";
 import MessageBubble from "@/components/messages/MessageBubble";
 import { issueStore } from "@/stores/issueStore";
 import { messageStore } from "@/stores/messageStore";
+import { workspaceStore } from "@/stores/workspaceStore";
 import { useStore } from "@nanostores/react";
 import { Issue } from "@prisma/client";
 import { useEffect } from "react";
 
 export function Messages({ issue }: { issue: Issue }) {
   const messages = useStore(messageStore.messages);
+  const users = useStore(workspaceStore.users);
 
   useEffect(() => {
     messageStore.loadMessages(issue);
@@ -22,6 +24,7 @@ export function Messages({ issue }: { issue: Issue }) {
           <MessageBubble
             key={i}
             timestamp={message.createdAt}
+            user={users[message.userId!]?.name}
             className={message.id ? "" : "bg-yellow-50"}
           >
             <MentionText text={message.content} />

@@ -19,9 +19,15 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex w-full h-full relative">
       {showSidebar && (
-        <div className="fixed h-full  bg-white w-56 xl:w-72 z-20 sm:relative sm:z-0 border-r">
-          <Sidebar />
-        </div>
+        <>
+          <div
+            onClick={() => uiStore.toggleSidebar()}
+            className="fixed bg-gray-500/50 h-full w-full z-10 sm:hidden"
+          />
+          <div className="fixed h-full  bg-white w-56 xl:w-72 z-20 sm:relative sm:z-0 border-r">
+            <Sidebar />
+          </div>
+        </>
       )}
       <Header />
       <main className="flex-1 overflow-scroll flex">{children}</main>

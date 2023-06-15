@@ -67,7 +67,7 @@ export default function PopoverMenu({
         <div
           ref={setPopperElement}
           className={twMerge(
-            "overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm",
+            "z-10 overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm",
             popoverClass
           )}
           style={styles.popper}

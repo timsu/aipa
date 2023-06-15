@@ -21,7 +21,6 @@ export default function PageLayout({
   fullSize?: boolean;
   className?: string;
 }) {
-  const sidebarVisible = useStore(uiStore.sidebarVisible);
   const activeIssue = useStore(issueStore.activeIssue);
   return (
     <>
@@ -30,15 +29,7 @@ export default function PageLayout({
       </Head>
       <div className={twMerge("px-4 sm:px-6 lg:px-8 flex-1 max-h-full overflow-auto", className)}>
         <div className="flex items-center">
-          <div
-            className={classNames(
-              "rounded-md hover:bg-gray-100 mr-2",
-              sidebarVisible && "sm:hidden"
-            )}
-            onClick={() => uiStore.toggleSidebar()}
-          >
-            <Bars3Icon className="h-5 w-5 text-gray-700" />
-          </div>
+          <SidebarButton />
           <h1 className="font-bold text-2xl my-4 flex-1">{title}</h1>
           {titleButtons}
         </div>
@@ -46,5 +37,17 @@ export default function PageLayout({
       </div>
       {activeIssue && <IssuePanel />}
     </>
+  );
+}
+export function SidebarButton() {
+  const sidebarVisible = useStore(uiStore.sidebarVisible);
+
+  return (
+    <div
+      className={classNames("rounded-md hover:bg-gray-100 mr-2", sidebarVisible && "sm:hidden")}
+      onClick={() => uiStore.toggleSidebar()}
+    >
+      <Bars3Icon className="h-5 w-5 text-gray-700" />
+    </div>
   );
 }

@@ -19,6 +19,7 @@ import IssueStateMenu from "@/components/issues/IssueStateMenu";
 import TextField from "@/components/inputs/TextField";
 import API from "@/client/api";
 import useShortcut, { ctrlOrMeta } from "@/components/hooks/useShortcut";
+import { SidebarButton } from "@/components/layout/PageLayout";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -37,6 +38,7 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
   return (
     <div>
       <div className="flex items-center">
+        <SidebarButton />
         <ProjectBadge project={project} />
         <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-1" />
         <h2 className="text-xl flex-1">{issue.identifier}</h2>
@@ -235,7 +237,11 @@ const ViewActions = ({ issue }: { issue: Issue }) => {
   if (issue.state == IssueState.BACKLOG)
     actions.push({ label: "Mark as To Do", transition: IssueState.TODO });
 
-  if (issue.state == IssueState.TODO || issue.state == IssueState.BACKLOG)
+  if (
+    issue.state == IssueState.TODO ||
+    issue.state == IssueState.BACKLOG ||
+    issue.state == IssueState.SUGGESTIONS
+  )
     actions.push({
       label: "Start Issue",
       transition: IssueState.IN_PROGRESS,

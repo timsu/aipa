@@ -27,8 +27,14 @@ export default function ChatInput() {
       onChange={(e, newValue) => setValue(newValue)}
       allowSpaceInQuery
       onKeyDown={onKeyDown}
+      placeholder="Type a message..."
       style={{
+        padding: 4,
+        control: {
+          padding: 4,
+        },
         input: {
+          padding: 8,
           borderRadius: "0.375rem",
           border: "1px solid rgb(209,213,219)",
         },

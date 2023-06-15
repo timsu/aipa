@@ -22,6 +22,7 @@ import Checkbox from "@/components/inputs/Checkbox";
 import ProjectPicker from "@/components/projects/ProjectPicker";
 import useShortcut, { ctrlOrMeta } from "@/components/hooks/useShortcut";
 import { messageStore } from "@/stores/messageStore";
+import { SidebarButton } from "@/components/layout/PageLayout";
 
 export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -150,6 +151,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   return (
     <div>
       <div className="flex items-center">
+        <SidebarButton />
         <ProjectPicker project={project} />
         <ChevronRightIcon className="w-4 h-4 text-gray-400 mx-1" />
         <h2 className="font-bold text-xl flex-1">
