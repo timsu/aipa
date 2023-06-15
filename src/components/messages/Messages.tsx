@@ -4,6 +4,7 @@ import MessageBubble from "@/components/messages/MessageBubble";
 import { issueStore } from "@/stores/issueStore";
 import { messageStore } from "@/stores/messageStore";
 import { workspaceStore } from "@/stores/workspaceStore";
+import { UIMessage } from "@/types";
 import { useStore } from "@nanostores/react";
 import { Issue } from "@prisma/client";
 import { useEffect, useState } from "react";
@@ -11,7 +12,6 @@ import { useEffect, useState } from "react";
 export function Messages({ issue }: { issue: Issue }) {
   const [editing, setEditing] = useState(false);
   const messages = useStore(messageStore.messages);
-  const users = useStore(workspaceStore.users);
 
   useEffect(() => {
     messageStore.loadMessages(issue);
@@ -30,17 +30,33 @@ export function Messages({ issue }: { issue: Issue }) {
       )}
       <div className="mt-4 flex flex-col-reverse gap-4">
         {messages.map((message, i) => (
-          <MessageBubble
-            key={i}
-            timestamp={message.createdAt}
-            user={users[message.userId!]?.name}
-            className={message.id ? "" : "bg-yellow-50"}
-          >
-            <MentionText text={message.content} />
-          </MessageBubble>
+          <Message key={i} message={message} />
         ))}
       </div>
     </div>
+  );
+}
+
+function Message({ message }: { message: UIMessage }) {
+  const users = useStore(workspaceStore.users);
+  const user = users[message.userId!];
+
+  const from = user
+    ? message.role == "assistant"
+      ? `${user.name} (via assistant)`
+      : user.name
+    : "";
+
+  return (
+    <MessageBubble
+      timestamp={message.createdAt}
+      user={from}
+      className={
+        !message.id ? "bg-yellow-50" : message.role == "assistant" ? "bg-green-50" : "bg-blue-50"
+      }
+    >
+      <MentionText text={message.content} />
+    </MessageBubble>
   );
 }
 

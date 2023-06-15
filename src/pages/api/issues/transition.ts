@@ -51,8 +51,15 @@ export default streamingApiWrapper(async function handler(
     }
 
     if (override) {
-      streamWrite(res, { role: "assistant", content: `State changed to ${stateLabels[state]}.` });
-      await applyUpdates(issue, { state }, res);
+      await Promise.all([
+        writeMessageAndCreateComment(
+          issue,
+          session,
+          `State changed to ${stateLabels[state]} (override).`,
+          res
+        ),
+        applyUpdates(issue, { state }, res),
+      ]);
     } else if (issue.state == IssueState.DRAFT) {
       const result = await validateCreateIssue(issue, session, res, rules, history);
       if (!result) return;
@@ -69,8 +76,15 @@ export default streamingApiWrapper(async function handler(
         updates.assigneeId = session.user.id;
       if (state == IssueState.DONE || state == IssueState.WONT_FIX) updates.resolvedAt = new Date();
       else if (issue.resolvedAt) updates.resolvedAt = null;
-      streamWrite(res, { role: "assistant", content: `State changed to ${stateLabels[state]}.` });
-      await applyUpdates(issue, updates, res);
+      await Promise.all([
+        writeMessageAndCreateComment(
+          issue,
+          session,
+          `State changed to ${stateLabels[state]}.`,
+          res
+        ),
+        applyUpdates(issue, updates, res),
+      ]);
     }
 
     return;
@@ -78,6 +92,23 @@ export default streamingApiWrapper(async function handler(
 
   throw new ApiError(400, "Not implemented yet");
 });
+
+const writeMessageAndCreateComment = async (
+  issue: Issue,
+  session: Session,
+  message: string,
+  res: NextApiResponse
+) => {
+  streamWrite(res, { role: "assistant", content: message });
+  await prisma.issueComment.create({
+    data: {
+      issueId: issue.id,
+      userId: session.user.id,
+      message,
+      type: "assistant",
+    },
+  });
+};
 
 export async function validateCreateIssue(
   issue: Issue,
