@@ -11,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       OPENAI_API_KEY: Hello
-      SUPABASE_URL: https://something.supabase.co
-      SUPABASE_KEY: Hello
       INNGEST_EVENT_KEY: local
       ABLY_API_KEY: test
     steps:

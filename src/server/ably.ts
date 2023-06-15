@@ -1,4 +1,4 @@
-import { IssueMessage } from "@/types";
+import { UIMessage } from "@/types";
 import { Issue } from "@prisma/client";
 import Ably from "ably";
 
@@ -9,7 +9,7 @@ export default function getAbly() {
   return ably;
 }
 
-export const ablySendIssueMessage = (id: string, message: IssueMessage) =>
+export const ablySendIssueMessage = (id: string, message: UIMessage) =>
   getAbly()
     .channels.get("issue:" + id)
     .publish("message", message);

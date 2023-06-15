@@ -1,4 +1,4 @@
-# DocGet
+# AIPA
 
 ## Getting Started
 
@@ -10,4 +10,4 @@ npm run dev
 
 When it's time to deploy, push to production, e.g.
 
-[Create a PR from main](https://github.com/docget-inc/docget/compare/production...main)
+[Create a PR from main](/compare/production...main)
