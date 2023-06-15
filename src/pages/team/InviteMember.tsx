@@ -2,11 +2,12 @@ import Select from "@/components/inputs/Select";
 import TextField from "@/components/inputs/TextField";
 import Button from "@/components/ui/Button";
 import { unwrapError } from "@/lib/utils";
+import { workspaceStore } from "@/stores/workspaceStore";
 import { WorkspaceRole } from "@/types";
 import { FormEvent, useState } from "react";
 
 export default function InviteMember() {
-  const [email, setEmail] = useState<string>();
+  const [email, setEmail] = useState<string>("");
   const [role, setRole] = useState<WorkspaceRole>(WorkspaceRole.MEMBER);
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -21,9 +22,8 @@ export default function InviteMember() {
     try {
       setSubmitting(true);
       setError(undefined);
-      // const response = await API.projectAddMember(project, email, role)
-      // projectStore.onProjectUpdated(response)
-      setEmail(undefined);
+      await workspaceStore.inviteMember(email, role);
+      setEmail("");
     } catch (e) {
       setError(unwrapError(e));
     } finally {

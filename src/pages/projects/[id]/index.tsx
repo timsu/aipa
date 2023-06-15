@@ -73,9 +73,9 @@ export default function Project({ id, ...props }: Props) {
     const form = formRef.current!;
     form.reset();
 
-    API.getValidations(project).then((validations) => {
-      if (!validations?.rules) return;
-      const rules = validations.rules as { [key: string]: string };
+    API.validations.list(project).then((validations) => {
+      const rules = validations[0]?.rules as { [key: string]: string };
+      if (!rules) return;
       for (const key of Object.keys(rules)) {
         const value = rules[key];
         if ((form.elements as any)[key]) (form.elements as any)[key].value = value;
@@ -109,7 +109,7 @@ export default function Project({ id, ...props }: Props) {
 
     try {
       setSubmitting(true);
-      await API.saveValidations(project, updates);
+      await API.validations.create(project, updates);
       setDirty(false);
       setSuccessMessage("Saved!");
     } catch (error) {

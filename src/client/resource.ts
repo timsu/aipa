@@ -79,3 +79,36 @@ export class SingleResource<Type extends GenericModel> {
     return response.data;
   }
 }
+
+export class SubResource<Type extends GenericModel, SubType> {
+  constructor(public conn: Connector, public name: string, public subName: string) {}
+
+  async list(parent: Type, params?: string): Promise<ItemsResponse<SubType>> {
+    const response = await this.conn.axios.get(
+      `/${this.name}/${parent.id}/${this.subName}${params ? "?" + params : ""}`
+    );
+    return response.data;
+  }
+
+  async create(parent: Type, item: Partial<SubType>): Promise<ItemResponse<SubType>> {
+    const response = await this.conn.axios.post(`/${this.name}/${parent.id}/${this.subName}`, item);
+    return response.data;
+  }
+
+  async get(parentId: string, id: string): Promise<ItemResponse<SubType>> {
+    const response = await this.conn.axios.get(`/${this.name}/${parentId}/${this.subName}/${id}`);
+    return response.data;
+  }
+
+  async update(
+    parentId: string,
+    id: string,
+    item: Partial<SubType>
+  ): Promise<ItemResponse<SubType>> {
+    const response = await this.conn.axios.put(
+      `/${this.name}?${parentId}/${this.subName}/${id}`,
+      item
+    );
+    return response.data;
+  }
+}

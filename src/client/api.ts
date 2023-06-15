@@ -1,6 +1,14 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
 
-import { Issue, IssueComment, Project, ProjectValidation, User, Workspace } from "@prisma/client";
+import {
+  Issue,
+  IssueComment,
+  Project,
+  ProjectValidation,
+  User,
+  Workspace,
+  WorkspaceUser,
+} from "@prisma/client";
 import {
   IssueType,
   IssueState,
@@ -9,7 +17,7 @@ import {
   ValidationRules,
   ValidationRuleset,
 } from "@/types";
-import { Resource, ResourceWithParent, SingleResource } from "./resource";
+import { Resource, ResourceWithParent, SingleResource, SubResource } from "./resource";
 import { logger } from "@/lib/logger";
 
 class APIService {
@@ -43,6 +51,10 @@ class APIService {
     "project_id",
     "messages"
   );
+
+  public validations = new SubResource<Project, ProjectValidation>(this, "projects", "validations");
+
+  public members = new SubResource<Workspace, WorkspaceUser>(this, "workspaces", "members");
 
   getAblyTokenRequest = async (): Promise<string> => {
     const response = await this.axios.get("/ably/token");
@@ -93,16 +105,6 @@ class APIService {
     onData: (data: ChatMessage | string) => void
   ): Promise<void> => {
     await this.stream(`/issues/dryRun`, { issue, ...updates }, onData);
-  };
-
-  getValidations = async (project: Project): Promise<ProjectValidation | null> => {
-    const response = await this.axios.get(`/projects/${project.id}/validations`);
-    return response.data;
-  };
-
-  saveValidations = async (project: Project, updates: any): Promise<ProjectValidation> => {
-    const response = await this.axios.post(`/projects/${project.id}/validations`, updates);
-    return response.data;
   };
 
   stream = (

@@ -2,6 +2,7 @@ import { atom, map } from "nanostores";
 
 import { Workspace } from "@prisma/client";
 import { User } from "@/types";
+import API from "@/client/api";
 
 class WorkspaceStore {
   // --- services
@@ -9,10 +10,12 @@ class WorkspaceStore {
   workspaces = atom<Workspace[]>([]);
 
   users = map<{ [id: string]: User }>({});
+
   userList = atom<User[]>([]);
-  pendingUsers = atom<User[]>([]);
 
   activeWorkspace = atom<Workspace | null>(null);
+
+  roles = map<{ [id: string]: string }>({});
 
   // --- actions
 
@@ -32,6 +35,30 @@ class WorkspaceStore {
       }
     });
     this.users.set(map);
+  };
+
+  loadRoles = async () => {
+    const workspace = this.activeWorkspace.get();
+    if (!workspace) return;
+    const members = await API.members.list(workspace);
+
+    const roles: { [id: string]: string } = {};
+    members.forEach((member) => {
+      roles[member.userId] = member.role;
+    });
+    this.roles.set(roles);
+  };
+
+  inviteMember = async (email: string, role: string) => {
+    const workspace = this.activeWorkspace.get();
+    if (!workspace) return;
+    // const response = await API.projectAddMember(project, email, role)
+    // projectStore.onProjectUpdated(response)
+    const user = { id: "", name: email, role };
+    this.userList.set([...this.userList.get(), user]);
+    this.roles.set({ ...this.roles.get(), [user.id]: user.role });
+
+    await API.members.create(workspace, { email, role } as any);
   };
 }
 

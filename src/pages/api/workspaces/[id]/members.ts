@@ -9,6 +9,7 @@ import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 import { getProject } from "@/server/loaders";
 import { WorkspaceRole } from "@/types";
 import emails from "@/emails/emails";
+import { titleCase } from "@/lib/utils";
 
 export default authApiWrapper<WorkspaceUser[] | WorkspaceUser>(async function handler(
   req: NextApiRequest,
@@ -53,6 +54,7 @@ export default authApiWrapper<WorkspaceUser[] | WorkspaceUser>(async function ha
     existingUser ||
     (await prisma.user.create({
       data: {
+        name: titleCase(actualEmail.split("@")[0]),
         email: actualEmail,
       },
     }));

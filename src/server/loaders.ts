@@ -48,6 +48,7 @@ export const loadWorkspaceData = async (
             id: true,
             name: true,
             image: true,
+            email: true,
           },
           where: {
             workspaces: {
@@ -60,6 +61,12 @@ export const loadWorkspaceData = async (
         }),
       ])
     : [[], []];
+
+  const users: User[] = people.map((p) => ({
+    id: p.id,
+    name: p.name || p.email,
+    image: p.image,
+  }));
 
   const redirect =
     workspaces.length == 0
@@ -88,7 +95,7 @@ export const loadWorkspaceData = async (
     workspaces: serialize(workspaces),
     activeWorkspace: activeWorkspace?.id || null,
     projects: serialize(projects),
-    people: serialize(people),
+    people: serialize(users),
     redirect,
   };
 };

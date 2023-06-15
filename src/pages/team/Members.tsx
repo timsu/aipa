@@ -1,3 +1,4 @@
+import API from "@/client/api";
 import Avatar, { UserAvatar } from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import { uiStore } from "@/stores/uiStore";
@@ -5,10 +6,19 @@ import { workspaceStore } from "@/stores/workspaceStore";
 import { User } from "@/types";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useStore } from "@nanostores/react";
+import { WorkspaceUser } from "@prisma/client";
+import { useEffect, useState } from "react";
 
 export default function Members({ isAdmin }: { isAdmin?: boolean }) {
   const users = useStore(workspaceStore.userList);
   const you = useStore(uiStore.user);
+  const roles = useStore(workspaceStore.roles);
+  const workspace = useStore(workspaceStore.activeWorkspace);
+
+  useEffect(() => {
+    if (!workspace) return;
+    workspaceStore.loadRoles();
+  }, [workspace]);
 
   const removeMember = async (user: User) => {};
 
@@ -30,7 +40,7 @@ export default function Members({ isAdmin }: { isAdmin?: boolean }) {
                     scope="col"
                     className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                   >
-                    {/* Role */}
+                    Role
                   </th>
                   {isAdmin && (
                     <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6 w-20">
@@ -44,14 +54,18 @@ export default function Members({ isAdmin }: { isAdmin?: boolean }) {
                   <tr key={user.id || user.name}>
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                       <div className="flex items-center">
-                        {user.id ? <Avatar user={user} /> : <EnvelopeIcon className="h-8 w-8" />}
+                        {user.id ? (
+                          <Avatar className="h-8 w-8" user={user} />
+                        ) : (
+                          <EnvelopeIcon className="h-8 w-8" />
+                        )}
                         <div className="ml-4">
                           <div className="font-medium text-gray-900">{user.name}</div>
                         </div>
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      {user.role}
+                      {roles[user.id!]}
                     </td>
                     {isAdmin && (
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
