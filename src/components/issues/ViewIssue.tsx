@@ -21,6 +21,7 @@ import API from "@/client/api";
 import useShortcut, { ctrlOrMeta } from "@/components/hooks/useShortcut";
 import { SidebarButton } from "@/components/layout/PageLayout";
 import IssueAssigneeMenu from "@/components/issues/IssueAssigneeMenu";
+import IssuePriorityMenu from "@/components/issues/IssuePriorityMenu";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
   const project = useStore(projectStore.activeProject)!;
@@ -104,6 +105,10 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
           buttonClass="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer"
         />
         <IssueAssigneeMenu
+          issue={issue}
+          buttonClass="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer"
+        />
+        <IssuePriorityMenu
           issue={issue}
           buttonClass="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer"
         />
@@ -240,18 +245,30 @@ const ViewActions = ({ issue }: { issue: Issue }) => {
   if (
     issue.state == IssueState.TODO ||
     issue.state == IssueState.BACKLOG ||
-    issue.state == IssueState.SUGGESTIONS
+    issue.state == IssueState.SUGGESTIONS ||
+    issue.state == IssueState.BLOCKED
   )
     actions.push({
-      label: "Start Issue",
+      label: issue.state == IssueState.BLOCKED ? "Resume Issue" : "Start Issue",
       transition: IssueState.IN_PROGRESS,
       tooltip: "Assign to you and move to 'In Progress'",
     });
 
-  if (issue.state == IssueState.IN_PROGRESS)
-    actions.push({ label: "Start Reviewing", transition: IssueState.REVIEW });
+  if (issue.state == IssueState.IN_PROGRESS) {
+    actions.push({ label: "Ready to Review", transition: IssueState.REVIEW });
+    actions.push({
+      label: "Blocked",
+      transition: IssueState.BLOCKED,
+      className: "bg-transparent text-purple-500 hover:bg-purple-100",
+      tooltip: "Use 'Blocked' to signal you can't make progress",
+    });
+  }
 
-  if (issue.state == IssueState.TODO || issue.state == IssueState.IN_PROGRESS)
+  if (
+    issue.state == IssueState.TODO ||
+    issue.state == IssueState.IN_PROGRESS ||
+    issue.state == IssueState.BLOCKED
+  )
     actions.push({
       label: "Back to Backlog",
       transition: IssueState.BACKLOG,

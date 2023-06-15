@@ -11,6 +11,7 @@ const states = [
   IssueState.DRAFT,
   IssueState.REVIEW,
   IssueState.IN_PROGRESS,
+  IssueState.BLOCKED,
   IssueState.TODO,
   IssueState.BACKLOG,
   IssueState.DONE,

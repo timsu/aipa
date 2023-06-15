@@ -38,6 +38,7 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
           },
         ],
       },
+      orderBy: [{ priority: "desc" }, { updatedAt: "desc" }],
     });
   } else if (filter == "project") {
     const projectId = req.query.projectId as string;
@@ -51,6 +52,7 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
           not: IssueState.DRAFT,
         },
       },
+      orderBy: [{ priority: "desc" }, { updatedAt: "desc" }],
     });
   } else if (filter == "all") {
     // return all visible issues for this user
@@ -74,6 +76,7 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
           in: projects.map((p) => p.id),
         },
       },
+      orderBy: [{ priority: "desc" }, { updatedAt: "desc" }],
     });
   } else if (filter == "something-new") {
     // return new suggested issues for user
@@ -98,7 +101,7 @@ async function list(session: Session, req: NextApiRequest): Promise<Issue[]> {
           in: projects.map((p) => p.id),
         },
       },
-      orderBy: [{ state: "desc" }, { updatedAt: "desc" }],
+      orderBy: [{ state: "desc" }, { priority: "desc" }, { updatedAt: "desc" }],
       take: 6,
     });
   } else {

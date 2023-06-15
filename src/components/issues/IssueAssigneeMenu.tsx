@@ -19,7 +19,7 @@ export default function IssueAssigneeMenu({
   const users = useStore(workspaceStore.users);
   const userList = useStore(workspaceStore.userList);
 
-  const assign = (userId: string | null) => {
+  const click = (userId: string | null) => {
     issueStore.updateIssue(issue, { assigneeId: userId });
   };
 
@@ -30,7 +30,7 @@ export default function IssueAssigneeMenu({
   return (
     <PopoverMenu buttonClass={buttonClass} buttonLabel={assigneeName}>
       <div className="px-2 py-2">Assign to:</div>
-      <PopoverSelectOption selected={null == issue.assigneeId} onClick={() => assign(null)}>
+      <PopoverSelectOption selected={null == issue.assigneeId} onClick={() => click(null)}>
         No One
       </PopoverSelectOption>
 
@@ -38,7 +38,7 @@ export default function IssueAssigneeMenu({
         <PopoverSelectOption
           key={user.id}
           selected={user.id == issue.assigneeId}
-          onClick={() => assign(user.id)}
+          onClick={() => click(user.id)}
         >
           {user.name!}
         </PopoverSelectOption>

@@ -3,11 +3,12 @@ import { Issue } from "@prisma/client";
 import Image from "next/image";
 import ProjectBadge from "../projects/ProjectBadge";
 import IssueIcon from "./IssueTypeIcon";
-import { IssueState, IssueType } from "@/types";
+import { IssueState, IssueType, Priority, priorityColors, priorityLabels } from "@/types";
 import { classNames } from "@/lib/utils";
 import { useStore } from "@nanostores/react";
 import { issueStore } from "@/stores/issueStore";
 import { UserAvatar } from "../ui/Avatar";
+import { priorityIcons } from "@/components/issues/IssuePriorityMenu";
 
 export default function IssueCard({
   issue,
@@ -23,8 +24,10 @@ export default function IssueCard({
       ? "bg-green-50 hover:bg-green-100"
       : issue.state == IssueState.REVIEW
       ? "bg-blue-50 hover:bg-blue-100"
+      : issue.state == IssueState.BLOCKED
+      ? "bg-purple-100 hover:bg-purple-300"
       : issue.type == IssueType.BUG
-      ? "bg-red-50 hover:bg-red-100"
+      ? "bg-red-100 hover:bg-red-200"
       : issue.type == IssueType.EXPRIMENT
       ? "bg-purple-50 hover:bg-purple-100"
       : issue.state == IssueState.IN_PROGRESS
@@ -54,14 +57,26 @@ export default function IssueCard({
             </h3>
           </div>
           <div className="flex items-center space-x-3 mt-1">
-            <span className="text-xs font-medium" style={{ color: `#${project.color}` }}>
+            <div className="text-xs font-medium" style={{ color: `#${project.color}` }}>
               {project.shortcode}-{issue.number}
-            </span>
+            </div>
 
-            <p className="flex items-center gap-1 truncate text-sm text-gray-500">
+            <div className="flex items-center gap-1 text-sm text-gray-500">
               <IssueIcon type={issue.type.trim() as any} />
               {issue.type}
-            </p>
+            </div>
+
+            {issue.priority ? (
+              <div
+                className={classNames(
+                  "flex items-center text-sm",
+                  priorityColors[issue.priority as Priority]
+                )}
+              >
+                {priorityIcons[issue.priority as Priority]}
+                {priorityLabels[issue.priority as Priority]}
+              </div>
+            ) : null}
           </div>
         </div>
         {issue.assigneeId && <UserAvatar userId={issue.assigneeId} />}

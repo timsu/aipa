@@ -52,6 +52,7 @@ export enum IssueState {
   BACKLOG = "backlog",
   TODO = "todo",
   IN_PROGRESS = "in_progress",
+  BLOCKED = "blocked",
   REVIEW = "review",
   DONE = "done",
   WONT_FIX = "wont_fix",
@@ -63,6 +64,7 @@ export const stateLabels: { [state: string]: string } = {
   [IssueState.BACKLOG]: "Backlog",
   [IssueState.TODO]: "Todo",
   [IssueState.IN_PROGRESS]: "In Progress",
+  [IssueState.BLOCKED]: "Blocked",
   [IssueState.REVIEW]: "In Review",
   [IssueState.DONE]: "Done",
   [IssueState.WONT_FIX]: "Won't Fix",
@@ -95,4 +97,28 @@ export enum ValidationRules {
 
 export type ValidationRuleset = {
   [key: string]: string;
+};
+
+export enum Priority {
+  LOWEST = -2,
+  LOW = -1,
+  MEDIUM = 0,
+  HIGH = 1,
+  HIGHEST = 2,
+}
+
+export const priorityColors = {
+  [Priority.HIGHEST]: "text-red-500",
+  [Priority.HIGH]: "text-orange-500",
+  [Priority.MEDIUM]: "",
+  [Priority.LOW]: "text-blue-500",
+  [Priority.LOWEST]: "text-purple-500",
+};
+
+export const priorityLabels = {
+  [Priority.HIGHEST]: "Highest",
+  [Priority.HIGH]: "High",
+  [Priority.MEDIUM]: "Medium",
+  [Priority.LOW]: "Low",
+  [Priority.LOWEST]: "Lowest",
 };

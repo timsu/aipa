@@ -14,6 +14,7 @@ const states = [
   IssueState.IN_PROGRESS,
   IssueState.REVIEW,
   IssueState.DONE,
+  IssueState.BLOCKED,
   IssueState.WONT_FIX,
 ];
 
@@ -24,18 +25,18 @@ export default function IssueStateMenu({
   issue: Issue;
   buttonClass: string;
 }) {
-  const transition = (state: IssueState) => {
+  const click = (state: IssueState) => {
     issueStore.transitionIssue(issue, state);
   };
 
   return (
     <PopoverMenu buttonClass={buttonClass} buttonLabel={stateLabels[issue.state]}>
-      <div className="px-2 py-2">Transition to:</div>
+      <div className="px-2 py-2 text-center">Transition to:</div>
       {states.map((state) => (
         <PopoverSelectOption
           key={state}
           selected={issue.state == state}
-          onClick={() => transition(state)}
+          onClick={() => click(state)}
         >
           {stateLabels[state]}
         </PopoverSelectOption>

@@ -159,6 +159,7 @@ model Issue {
   number      Int
   identifier  String  @default("") @db.VarChar(20)
   state       String  @db.VarChar(30)
+  priority    Int     @default(0)
 
   fields      Json?
   meta        Json?
