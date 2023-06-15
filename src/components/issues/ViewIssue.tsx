@@ -95,7 +95,7 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
         )}
       </div>
 
-      <div className="flex gap-4 items-center mb-4 mt-2">
+      <div className="flex xl:gap-4 items-center mb-4 mt-2 text-sm lg:text-base">
         <div className="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
           <IssueIcon type={issue.type} />
           {titleCase(issue.type)}
@@ -292,11 +292,11 @@ const ViewActions = ({ issue }: { issue: Issue }) => {
   });
 
   return (
-    <div className="flex gap-4 flex-wrap">
+    <div className="flex gap-2 lg:gap-4 flex-wrap">
       {actions.map(({ label, transition: state, className, tooltip }, index) => (
         <Button
           key={label}
-          className={className}
+          className={classNames("text-sm lg:text-base px-2 xl:px-4", className)}
           data-tooltip-content={
             (tooltip || `Transition to ${stateLabels[state]}`) + ` (${ctrlOrMeta + (index + 1)})`
           }
@@ -310,7 +310,7 @@ const ViewActions = ({ issue }: { issue: Issue }) => {
 
       <div className="flex-1"></div>
       <Button
-        className="bg-transparent text-red-700 hover:bg-red-50"
+        className="text-sm lg:text-base px-2 xl:px-4 bg-transparent text-red-700 hover:bg-red-50"
         data-tooltip-content="Delete this issue"
         data-tooltip-id="tooltip"
         onClick={deleteIssue}

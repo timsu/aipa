@@ -22,9 +22,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         <>
           <div
             onClick={() => uiStore.toggleSidebar()}
-            className="fixed bg-gray-500/50 h-full w-full z-10 sm:hidden"
+            className="fixed bg-gray-500/50 h-full w-full z-10 lg:hidden"
           />
-          <div className="fixed h-full  bg-white w-56 xl:w-72 z-20 sm:relative sm:z-0 border-r">
+          <div className="fixed h-full bg-white w-72 z-20 lg:relative lg:z-0 border-r">
             <Sidebar />
           </div>
         </>
