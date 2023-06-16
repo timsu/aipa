@@ -3,6 +3,9 @@ import { atom, map } from "nanostores";
 import { Workspace } from "@prisma/client";
 import { User } from "@/types";
 import API from "@/client/api";
+import { uiStore } from "@/stores/uiStore";
+import { logger } from "@/lib/logger";
+import { toast } from "react-toastify";
 
 class WorkspaceStore {
   // --- services
@@ -13,9 +16,9 @@ class WorkspaceStore {
 
   userList = atom<User[]>([]);
 
-  activeWorkspace = atom<Workspace | null>(null);
+  memberList = atom<User[]>([]); // team roster for the teams page
 
-  roles = map<{ [id: string]: string }>({});
+  activeWorkspace = atom<Workspace | null>(null);
 
   // --- actions
 
@@ -24,7 +27,7 @@ class WorkspaceStore {
     this.activeWorkspace.set(workspaces.find((w) => w.id === activeWorkspace) || null);
   };
 
-  initUsers = (users: User[], yourUser: string) => {
+  initUsers = (users: User[], yourUser: string | undefined) => {
     this.userList.set(users);
 
     const map: { [id: string]: User } = {};
@@ -35,30 +38,43 @@ class WorkspaceStore {
       }
     });
     this.users.set(map);
+    this.memberList.set(users);
   };
 
-  loadRoles = async () => {
+  loadMembers = async () => {
     const workspace = this.activeWorkspace.get();
     if (!workspace) return;
-    const members = await API.members.list(workspace);
-
-    const roles: { [id: string]: string } = {};
-    members.forEach((member) => {
-      roles[member.userId] = member.role;
-    });
-    this.roles.set(roles);
+    const members = await API.members.list<User[]>(workspace);
+    this.memberList.set(members);
   };
 
   inviteMember = async (email: string, role: string) => {
     const workspace = this.activeWorkspace.get();
     if (!workspace) return;
-    // const response = await API.projectAddMember(project, email, role)
-    // projectStore.onProjectUpdated(response)
-    const user = { id: "", name: email, role };
-    this.userList.set([...this.userList.get(), user]);
-    this.roles.set({ ...this.roles.get(), [user.id]: user.role });
+    const user = await API.members.create<User & { email: string }>(workspace, { email, role });
 
-    await API.members.create(workspace, { email, role } as any);
+    const users = this.memberList.get();
+    if (!users.find((u) => u.id === user.id)) {
+      users.unshift(user);
+    }
+
+    this.initUsers(users, uiStore.user.get()?.id);
+    this.memberList.set(users);
+  };
+
+  resendInvite = async (user: User) => {
+    const workspace = this.activeWorkspace.get();
+    if (!workspace) return;
+
+    this.userList.set(
+      this.userList.get().map((u) => (user.id === u.id ? { ...u, sentEmail: true } : u))
+    );
+    try {
+      await API.resendInvite(workspace.id, user.id);
+    } catch (e) {
+      logger.error(e);
+      toast.error("Failed to resend invite");
+    }
   };
 }
 

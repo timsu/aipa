@@ -49,6 +49,7 @@ export const loadWorkspaceData = async (
             name: true,
             image: true,
             email: true,
+            welcomedAt: true,
           },
           where: {
             workspaces: {

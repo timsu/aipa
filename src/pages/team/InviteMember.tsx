@@ -41,7 +41,6 @@ export default function InviteMember() {
             members. Admins can remove members, manage billing, and archive or delete projects.
           </p>
         </div>
-        {error && <div className="mt-2 text-sm text-red-500">{error}</div>}
 
         <form className="mt-5 sm:flex sm:items-center gap-2 select-none" onSubmit={onSubmit}>
           <TextField
@@ -68,6 +67,7 @@ export default function InviteMember() {
             Add
           </Button>
         </form>
+        {error && <div className="mt-2 -mb-2 text-sm text-red-500">{error}</div>}
       </div>
     </div>
   );

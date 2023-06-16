@@ -56,6 +56,13 @@ class APIService {
 
   public members = new SubResource<Workspace, WorkspaceUser>(this, "workspaces", "members");
 
+  resendInvite = async (workspaceId: string, userId: string): Promise<SuccessResponse> => {
+    const response = await this.axios.post(`/workspaces/${workspaceId}/resendInvite`, {
+      userId,
+    });
+    return response.data;
+  };
+
   getAblyTokenRequest = async (): Promise<string> => {
     const response = await this.axios.get("/ably/token");
     return response.data;

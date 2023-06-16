@@ -9,7 +9,14 @@ export type ChatMessage = {
   content: string;
 };
 
-export type User = { id: string; name: string | null; image?: string | null; role?: string | null };
+export type User = {
+  id: string;
+  name: string | null;
+  image?: string | null;
+  role?: string | null;
+  pending?: boolean;
+  sentEmail?: boolean;
+};
 
 export type UserMeta = {
   from?: string; // send from email

@@ -13,7 +13,7 @@ export default function IndexPage() {
       <Head>
         <title>{PRODUCT}</title>
       </Head>
-      <p>Welcome! Please sign in to continue.</p>
+      <p>Welcome! Join ze invite.</p>
       <ButtonLink href="/api/auth/signin" className="my-4">
         Sign in
       </ButtonLink>
@@ -25,16 +25,9 @@ export default function IndexPage() {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
 
-  if (session) {
-    return {
-      redirect: {
-        destination: "/dashboard",
-        permanent: false,
-      },
-    };
-  }
-
   return {
-    props: {},
+    props: {
+      session,
+    },
   };
 }
