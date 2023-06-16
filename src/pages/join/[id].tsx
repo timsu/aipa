@@ -8,6 +8,8 @@ import { ButtonLink } from "@/components/ui/Button";
 import { PRODUCT } from "@/types";
 import prisma from "@/server/prisma";
 import { Workspace } from "@prisma/client";
+import { ClientSafeProvider, getCsrfToken, getProviders, useSession } from "next-auth/react";
+import { SignInForm } from "@/pages/auth/signin";
 
 type Props = {
   error?: string;
@@ -15,40 +17,78 @@ type Props = {
   token: string;
   inviter: string;
   workspace: string;
+  csrfToken: string;
+  alreadyJoined: boolean;
+  providers: Record<string, ClientSafeProvider>;
 };
 
 export default function JoinInvitePage(props: Props) {
-  if (props.error)
-    return (
-      <AuthLayout>
-        <Head>
-          <title>{PRODUCT}</title>
-        </Head>
-        <p>Error: this invite is invalid or expired</p>
-        <ButtonLink href="/" className="my-4">
-          Go home
-        </ButtonLink>
-      </AuthLayout>
-    );
-
+  const session = useSession();
   return (
     <AuthLayout title={props.workspace}>
       <Head>
         <title>{PRODUCT}</title>
       </Head>
-      <p>
-        Welcome! {props.inviter} would like you to join their workspace on {PRODUCT}.
-      </p>
-      <ButtonLink href="/api/auth/signin" className="my-4">
-        Sign in
-      </ButtonLink>
+      {props.error ? (
+        <ErrorView />
+      ) : props.alreadyJoined ? (
+        <ExistingView {...props} />
+      ) : session.status == "authenticated" ? (
+        <JoinView {...props} />
+      ) : (
+        <LoginView {...props} />
+      )}
     </AuthLayout>
   );
 }
 
+const ErrorView = () => (
+  <>
+    <p>Error: this invite is invalid or expired</p>
+    <ButtonLink href="/" className="my-4">
+      Go home
+    </ButtonLink>
+  </>
+);
+
+const ExistingView = ({ workspace }: Props) => (
+  <>
+    <p>Welcome! You are already a member of {workspace}.</p>
+    <ButtonLink href="/dashboard" className="my-4">
+      Dashboard
+    </ButtonLink>
+  </>
+);
+
+const LoginView = (props: Props) => (
+  <>
+    <p className="mb-4">
+      Welcome! {props.inviter} would like you to join their workspace on {PRODUCT}.
+    </p>
+
+    <SignInForm
+      {...props}
+      callbackUrl={typeof location != "undefined" ? location.href : undefined}
+    />
+  </>
+);
+
+const JoinView = (props: Props) => (
+  <>
+    <p>
+      Welcome! {props.inviter} would like you to join their workspace on {PRODUCT}.
+    </p>
+    <ButtonLink href="/api/auth/signin" className="my-4">
+      Join
+    </ButtonLink>
+  </>
+);
+
 // Export the `session` prop to use sessions with Server Side Rendering
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
+  const providers = await getProviders();
+  const csrfToken = await getCsrfToken(context);
 
   const { id, email, token } = context.query;
 
@@ -92,12 +132,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      session,
-      email,
-      token,
+      email: email || null,
+      token: token || null,
       inviter: invite.creator?.name,
       workspace: invite.workspace.name,
       alreadyJoined,
+      providers: providers || {},
+      csrfToken,
     } as Props,
   };
 }
