@@ -76,3 +76,35 @@ export function titleCase(input: string) {
     .map((word) => `${word[0].toUpperCase()}${word.substring(1)}`)
     .join(" ");
 }
+
+export function generateRandomString(length: number) {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  let result = "";
+
+  // Create an array of 32-bit unsigned integers
+  const randomValues = new Uint32Array(length);
+
+  // Generate random values
+  crypto.getRandomValues(randomValues);
+  randomValues.forEach((value) => {
+    result += characters.charAt(value % charactersLength);
+  });
+  return result;
+}
+
+export async function generateUniqueRandomString(
+  length: number,
+  checker: (value: string) => Promise<boolean>
+) {
+  for (let i = 0; i < 10; i++) {
+    const slug = generateRandomString(length);
+    try {
+      const result = await checker(slug);
+      if (result) return slug;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  throw new Error("Failed to generate unique random string");
+}

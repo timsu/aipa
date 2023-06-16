@@ -6,7 +6,7 @@ import prisma, { serialize } from "@/server/prisma";
 import { isRedirect, sessionOrRedirect } from "@/pages/api/auth/[...nextauth]";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Workspace } from "@prisma/client";
+import { ProjectValidation, Workspace } from "@prisma/client";
 import Button from "@/components/ui/Button";
 import PageLayout from "@/components/layout/PageLayout";
 import TextField from "@/components/inputs/TextField";
@@ -73,8 +73,8 @@ export default function Project({ id, ...props }: Props) {
     const form = formRef.current!;
     form.reset();
 
-    API.validations.list(project).then((validations) => {
-      const rules = validations[0]?.rules as { [key: string]: string };
+    API.validations.list<ProjectValidation | null>(project).then((validations) => {
+      const rules = validations?.rules as { [key: string]: string };
       if (!rules) return;
       for (const key of Object.keys(rules)) {
         const value = rules[key];

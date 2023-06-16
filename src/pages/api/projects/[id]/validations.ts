@@ -7,7 +7,7 @@ import type { NextApiRequest } from "next";
 import { ApiError, authApiWrapper } from "@/server/apiWrapper";
 import { getProject } from "@/server/loaders";
 
-export default authApiWrapper<ProjectValidation[] | ProjectValidation>(async function handler(
+export default authApiWrapper<ProjectValidation | null>(async function handler(
   req: NextApiRequest,
   session: Session
 ) {
@@ -27,7 +27,7 @@ export default authApiWrapper<ProjectValidation[] | ProjectValidation>(async fun
   });
 
   if (req.method == "GET") {
-    return validation ? [validation] : [];
+    return validation ? validation : null;
   }
 
   if (validation) {

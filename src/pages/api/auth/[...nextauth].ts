@@ -49,11 +49,20 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
           where: {
             email: credentials.email,
           },
         });
+
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+            },
+          });
+        }
+
         return user;
       },
     }),

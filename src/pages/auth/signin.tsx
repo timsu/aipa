@@ -9,37 +9,72 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]";
 import { FormEvent, useState } from "react";
 import { AuthLayout } from "../../components/layout/AuthLayout";
+import { toast } from "react-toastify";
+import { unwrapError } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 type Props = {
+  email?: string;
+  token?: string;
   csrfToken: string;
   providers: Record<string, ClientSafeProvider>;
+  callbackUrl?: string;
 };
 
-export default function SignInPage({ csrfToken, providers }: Props) {
-  const [email, setEmail] = useState("");
+export default function SignInPage(props: Props) {
+  return (
+    <AuthLayout>
+      <Head>
+        <title>Sign In</title>
+      </Head>
+      <SignInForm {...props} />
+    </AuthLayout>
+  );
+}
+
+export function SignInForm({ csrfToken, providers, callbackUrl, email: queryEmail, token }: Props) {
+  const [email, setEmail] = useState(queryEmail || "");
   const oauthProviders = Object.values(providers || {}).filter((p) => p.type == "oauth");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // validate email
     if (!email || !email.includes("@")) return;
 
-    if (process.env.NODE_ENV === "development") {
-      await signIn("credentials", { email, token: "dev" });
-    } else {
-      await signIn("email", { email });
+    try {
+      setSubmitting(true);
+      if (token && email == queryEmail) {
+        if (callbackUrl?.includes("token=")) {
+          // on failure, remove the token from the callback url
+          callbackUrl = callbackUrl.replace(/&token=[^&]+/, "");
+        }
+        await signIn("credentials", {
+          email,
+          token,
+          callbackUrl,
+        });
+      } else {
+        if (process.env.NODE_ENV === "development" && !location.search.includes("test-email")) {
+          await signIn("credentials", { email, token: "dev", callbackUrl });
+        } else {
+          await signIn("email", { email, callbackUrl });
+        }
+      }
+    } catch (e: any) {
+      logger.error(e);
+      toast.error(unwrapError(e));
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <AuthLayout>
-      <Head>
-        <title>Sign In</title>
-      </Head>
+    <>
       {oauthProviders.map((provider) => (
         <div key={provider.name} className="">
           <button
-            onClick={() => signIn(provider.id, { callback: location.href })}
+            onClick={() => signIn(provider.id, { callbackUrl })}
             className="bg-white flex items-center w-full rounded-md border px-3 py-2 text-sm font-semibold shadow-sm hover:bg-blue-200 sm:ml-3 sm:w-auto"
           >
             <Image
@@ -69,14 +104,14 @@ export default function SignInPage({ csrfToken, providers }: Props) {
             className="p-2 flex-1 mr-4 w-[15rem] text-slate-800 rounded border border-gray-200"
           />
           <button
-            disabled={!email}
+            disabled={!email || submitting}
             className="inline-flex w-full justify-center rounded-md bg-blue-600 disabled:bg-gray-600 p-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
           >
             Continue&nbsp;<span className="hidden sm:inline">with Email</span>
           </button>
         </div>
       </form>
-    </AuthLayout>
+    </>
   );
 }
 

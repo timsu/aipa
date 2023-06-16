@@ -18,6 +18,7 @@ import { useStore } from "@nanostores/react";
 import { projectStore } from "@/stores/projectStore";
 import { useRouter } from "next/router";
 import { uiStore } from "@/stores/uiStore";
+import { workspaceStore } from "@/stores/workspaceStore";
 
 const navigation = [
   { name: "My Stuff", href: "/dashboard", icon: HomeIcon },
@@ -31,6 +32,7 @@ export default function Sidebar() {
   const router = useRouter();
   const currentPath = router.asPath;
   const projects = useStore(projectStore.projects);
+  const workspace = useStore(workspaceStore.activeWorkspace);
 
   const onLinkClick = () => uiStore.isSmallScreen() && uiStore.sidebarVisible.set(false);
 
@@ -76,7 +78,7 @@ export default function Sidebar() {
 
           <li>
             <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold leading-6 text-gray-400">Your projects</div>
+              <div className="text-sm font-semibold leading-6 text-gray-400">{workspace?.name}</div>
               <Link
                 href="/projects/new"
                 className="hover:bg-gray-200 text-gray-500 cursor-pointer rounded-md p-2 -mr-2"

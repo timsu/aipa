@@ -14,12 +14,13 @@ datasource db {
 // --- workspaces
 
 model Workspace {
-  id        String          @id @default(cuid())
+  id        String            @id @default(cuid())
   name      String
   users     WorkspaceUser[]
+  invites   WorkspaceInvite[]
   projects  Project[]
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   @@map("workspaces")
 }
@@ -36,6 +37,25 @@ model WorkspaceUser {
 
   @@id([userId, workspaceId])
   @@map("workspace_users")
+}
+
+model WorkspaceInvite {
+  id          String    @id @default(cuid())
+  slug        String    @db.VarChar(20) @unique
+  email       String
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  role        String
+  creatorId   String
+  creator     User?     @relation("invite_creator", fields: [creatorId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  joinedAt    DateTime?
+  deletedAt   DateTime?
+
+  @@map("workspace_invites")
 }
 
 model Project {
@@ -237,13 +257,15 @@ model User {
   activeWorkspace String?
   meta            Json      @default("{}")
 
-  workspaces     WorkspaceUser[]
-  projects       ProjectUser[]
-  issuesCreated  Issue[]         @relation("issue_creator")
-  issuesAssigned Issue[]         @relation("issue_assignee")
-  issuesFollowed Issue[]         @relation("issue_followers")
-  issueComments  IssueComment[]
-  attachments    Attachment[]
+  workspaces       WorkspaceUser[]
+  workspaceInvites WorkspaceInvite[]
+  createdInvites   WorkspaceInvite[] @relation("invite_creator")
+  projects         ProjectUser[]
+  issuesCreated    Issue[]           @relation("issue_creator")
+  issuesAssigned   Issue[]           @relation("issue_assignee")
+  issuesFollowed   Issue[]           @relation("issue_followers")
+  issueComments    IssueComment[]
+  attachments      Attachment[]
 
   @@map("users")
 }

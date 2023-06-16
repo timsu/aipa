@@ -10,17 +10,20 @@ import { WorkspaceUser } from "@prisma/client";
 import { useEffect, useState } from "react";
 
 export default function Members({ isAdmin }: { isAdmin?: boolean }) {
-  const users = useStore(workspaceStore.userList);
+  const users = useStore(workspaceStore.memberList);
   const you = useStore(uiStore.user);
-  const roles = useStore(workspaceStore.roles);
   const workspace = useStore(workspaceStore.activeWorkspace);
 
   useEffect(() => {
     if (!workspace) return;
-    workspaceStore.loadRoles();
+    workspaceStore.loadMembers();
   }, [workspace]);
 
   const removeMember = async (user: User) => {};
+
+  const resend = async (user: User) => {
+    await workspaceStore.resendInvite(user);
+  };
 
   return (
     <div className="mt-2 flex flex-col">
@@ -54,18 +57,27 @@ export default function Members({ isAdmin }: { isAdmin?: boolean }) {
                   <tr key={user.id || user.name}>
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                       <div className="flex items-center">
-                        {user.id ? (
+                        {!user.pending ? (
                           <Avatar className="h-8 w-8" user={user} />
                         ) : (
-                          <EnvelopeIcon className="h-8 w-8" />
+                          <EnvelopeIcon className="h-8 w-8 text-gray-500" />
                         )}
                         <div className="ml-4">
                           <div className="font-medium text-gray-900">{user.name}</div>
+                          {user.pending && (
+                            <div
+                              className="text-sm text-blue-500 hover:underline cursor-pointer"
+                              onClick={() => resend(user)}
+                            >
+                              {user.sentEmail ? "(Email sent)" : "(Resend invite?)"}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                      {roles[user.id!]}
+                      {user.role}
+                      {user.pending && ` (pending)`}
                     </td>
                     {isAdmin && (
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">

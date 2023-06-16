@@ -62,7 +62,7 @@ export default function Dashboard({ welcomed, ...props }: Props) {
 
 function DashboardIssues() {
   const emptyView = (
-    <div className="block">
+    <div className="block mb-8">
       <div className="mb-8">
         Nothing on your plate! Create a new issue or assign something to yourself.
       </div>

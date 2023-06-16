@@ -83,28 +83,24 @@ export class SingleResource<Type extends GenericModel> {
 export class SubResource<Type extends GenericModel, SubType> {
   constructor(public conn: Connector, public name: string, public subName: string) {}
 
-  async list(parent: Type, params?: string): Promise<ItemsResponse<SubType>> {
+  async list<T = SubType[]>(parent: Type, params?: string): Promise<T> {
     const response = await this.conn.axios.get(
       `/${this.name}/${parent.id}/${this.subName}${params ? "?" + params : ""}`
     );
     return response.data;
   }
 
-  async create(parent: Type, item: Partial<SubType>): Promise<ItemResponse<SubType>> {
+  async create<T = SubType>(parent: Type, item: Partial<T>): Promise<T> {
     const response = await this.conn.axios.post(`/${this.name}/${parent.id}/${this.subName}`, item);
     return response.data;
   }
 
-  async get(parentId: string, id: string): Promise<ItemResponse<SubType>> {
+  async get<T = SubType>(parentId: string, id: string): Promise<T> {
     const response = await this.conn.axios.get(`/${this.name}/${parentId}/${this.subName}/${id}`);
     return response.data;
   }
 
-  async update(
-    parentId: string,
-    id: string,
-    item: Partial<SubType>
-  ): Promise<ItemResponse<SubType>> {
+  async update<T = SubType>(parentId: string, id: string, item: Partial<T>): Promise<T> {
     const response = await this.conn.axios.put(
       `/${this.name}?${parentId}/${this.subName}/${id}`,
       item
