@@ -33,12 +33,21 @@ class APIService {
     this.axios = axios.create(config);
   }
 
+  // --- basic user stuff
+
+  public user = new SingleResource<User>(this, "user");
+
   welcome = async (): Promise<SuccessResponse> => {
     const response = await this.axios.get("/users/welcome");
     return response.data;
   };
 
-  public user = new SingleResource<User>(this, "user");
+  getAblyTokenRequest = async (): Promise<string> => {
+    const response = await this.axios.get("/ably/token");
+    return response.data;
+  };
+
+  // --- core items
 
   public workspaces = new Resource<Workspace>(this, "workspaces");
 
@@ -54,17 +63,22 @@ class APIService {
 
   public validations = new SubResource<Project, ProjectValidation>(this, "projects", "validations");
 
+  // --- invitations and joining
+
   public members = new SubResource<Workspace, WorkspaceUser>(this, "workspaces", "members");
 
-  resendInvite = async (workspaceId: string, email: string): Promise<SuccessResponse> => {
-    const response = await this.axios.post(`/workspaces/${workspaceId}/members/resend`, {
+  joinWorkspace = async (slug: string, email: string): Promise<SuccessResponse> => {
+    const response = await this.axios.post(`/workspaces/join`, {
+      slug,
       email,
     });
     return response.data;
   };
 
-  getAblyTokenRequest = async (): Promise<string> => {
-    const response = await this.axios.get("/ably/token");
+  resendInvite = async (workspaceId: string, email: string): Promise<SuccessResponse> => {
+    const response = await this.axios.post(`/workspaces/${workspaceId}/members/resend`, {
+      email,
+    });
     return response.data;
   };
 
@@ -76,6 +90,8 @@ class APIService {
     const response = await this.axios.post("/workspaces/invite", { id, emails, fromName });
     return response.data;
   };
+
+  // --- issues
 
   listIssues = async (params: { filter: string; [param: string]: any }): Promise<Issue[]> => {
     const queryString = new URLSearchParams(params).toString();

@@ -6,6 +6,7 @@ import API from "@/client/api";
 import { uiStore } from "@/stores/uiStore";
 import { logger } from "@/lib/logger";
 import { toast } from "react-toastify";
+import { unwrapError } from "@/lib/utils";
 
 class WorkspaceStore {
   // --- services
@@ -79,6 +80,15 @@ class WorkspaceStore {
     } catch (e) {
       logger.error(e);
       toast.error("Failed to resend invite");
+    }
+  };
+
+  doJoin = async ({ slug, email }: { slug: string; email: string }) => {
+    try {
+      await API.joinWorkspace(slug, email);
+    } catch (e) {
+      logger.error(e);
+      toast.error(unwrapError(e));
     }
   };
 }

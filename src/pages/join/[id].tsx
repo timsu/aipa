@@ -4,15 +4,18 @@ import Head from "next/head";
 
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { AuthLayout } from "@/components/layout/AuthLayout";
-import { ButtonLink } from "@/components/ui/Button";
+import Button, { ButtonLink } from "@/components/ui/Button";
 import { PRODUCT } from "@/types";
 import prisma from "@/server/prisma";
 import { Workspace } from "@prisma/client";
 import { ClientSafeProvider, getCsrfToken, getProviders, useSession } from "next-auth/react";
 import { SignInForm } from "@/pages/auth/signin";
+import { workspaceStore } from "@/stores/workspaceStore";
+import { useRouter } from "next/router";
 
 type Props = {
   error?: string;
+  slug: string;
   email: string;
   token: string;
   inviter: string;
@@ -27,7 +30,7 @@ export default function JoinInvitePage(props: Props) {
   return (
     <AuthLayout title={props.workspace}>
       <Head>
-        <title>{PRODUCT}</title>
+        <title>Join {props.workspace}</title>
       </Head>
       {props.error ? (
         <ErrorView />
@@ -55,7 +58,7 @@ const ExistingView = ({ workspace }: Props) => (
   <>
     <p>Welcome! You are already a member of {workspace}.</p>
     <ButtonLink href="/dashboard" className="my-4">
-      Dashboard
+      Go to Dashboard
     </ButtonLink>
   </>
 );
@@ -73,16 +76,24 @@ const LoginView = (props: Props) => (
   </>
 );
 
-const JoinView = (props: Props) => (
-  <>
-    <p>
-      Welcome! {props.inviter} would like you to join their workspace on {PRODUCT}.
-    </p>
-    <ButtonLink href="/api/auth/signin" className="my-4">
-      Join
-    </ButtonLink>
-  </>
-);
+const JoinView = (props: Props) => {
+  const router = useRouter();
+  const doJoin = async () => {
+    await workspaceStore.doJoin(props);
+    router.push("/dashboard");
+  };
+
+  return (
+    <>
+      <p>
+        Welcome! {props.inviter} would like you to join their workspace on {PRODUCT}.
+      </p>
+      <Button onClick={doJoin} className="my-4">
+        Join
+      </Button>
+    </>
+  );
+};
 
 // Export the `session` prop to use sessions with Server Side Rendering
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -132,6 +143,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      slug: id,
       email: email || null,
       token: token || null,
       inviter: invite.creator?.name,
