@@ -12,7 +12,7 @@ import emails from "@/emails/emails";
 import { titleCase } from "@/lib/utils";
 import { addMember } from "./post";
 import { getMembers } from "./get";
-import { removeMember } from "@/pages/api/workspaces/members/delete";
+import { removeMember } from "./delete";
 
 export default authApiWrapper<User[] | User | void>(async function handler(
   req: NextApiRequest,
@@ -51,11 +51,11 @@ export async function sendInviteEmail(
   session: Session,
   workspace: Workspace
 ) {
-  const data = {
-    email,
-    inviter: session.dbUser.name,
-  };
+  const secret = process.env.NEXTAUTH_SECRET!;
+  const token = jwt.sign({ email }, secret, { expiresIn: "1w" });
+  const path = `/join/${slug}?email=${encodeURIComponent(email)}&token=${token}`;
 
-  const path = `/join/${slug}` + new URLSearchParams(data).toString();
   await emails.sendInvite(email, session.dbUser.name, session.dbUser.email, workspace.name, path);
+
+  return path;
 }

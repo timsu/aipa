@@ -54,13 +54,13 @@ export async function addMember(
     });
   }
 
-  sendInviteEmail(email, invite.slug, session, workspace);
+  await sendInviteEmail(email, invite.slug, session, workspace);
 
   return {
     id: existingUser?.id || "",
     name: existingUser?.name || email,
     role: role,
     pending: true,
-    slug: invite.slug,
+    url: `/join/${invite.slug}`,
   };
 }

@@ -51,7 +51,10 @@ class WorkspaceStore {
   inviteMember = async (email: string, role: string) => {
     const workspace = this.activeWorkspace.get();
     if (!workspace) return;
-    const user = await API.members.create<User & { email: string }>(workspace, { email, role });
+    const user = await API.members.create<User & { email: string; url?: string }>(workspace, {
+      email,
+      role,
+    });
 
     const users = this.memberList.get();
     if (!users.find((u) => u.id === user.id)) {
@@ -60,6 +63,8 @@ class WorkspaceStore {
 
     this.initUsers(users, uiStore.user.get()?.id);
     this.memberList.set(users);
+
+    return user.url;
   };
 
   resendInvite = async (user: User) => {
@@ -70,7 +75,7 @@ class WorkspaceStore {
       this.userList.get().map((u) => (user.id === u.id ? { ...u, sentEmail: true } : u))
     );
     try {
-      await API.resendInvite(workspace.id, user.id);
+      await API.resendInvite(workspace.id, user.name!);
     } catch (e) {
       logger.error(e);
       toast.error("Failed to resend invite");

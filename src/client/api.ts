@@ -56,9 +56,9 @@ class APIService {
 
   public members = new SubResource<Workspace, WorkspaceUser>(this, "workspaces", "members");
 
-  resendInvite = async (workspaceId: string, userId: string): Promise<SuccessResponse> => {
-    const response = await this.axios.post(`/workspaces/${workspaceId}/resendInvite`, {
-      userId,
+  resendInvite = async (workspaceId: string, email: string): Promise<SuccessResponse> => {
+    const response = await this.axios.post(`/workspaces/${workspaceId}/members/resend`, {
+      email,
     });
     return response.data;
   };

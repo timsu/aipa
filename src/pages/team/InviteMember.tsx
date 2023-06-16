@@ -11,6 +11,7 @@ export default function InviteMember() {
   const [role, setRole] = useState<WorkspaceRole>(WorkspaceRole.MEMBER);
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [invitedUrl, setInvitedUrl] = useState<string | undefined>();
 
   const isAdmin = true;
 
@@ -22,7 +23,8 @@ export default function InviteMember() {
     try {
       setSubmitting(true);
       setError(undefined);
-      await workspaceStore.inviteMember(email, role);
+      const result = await workspaceStore.inviteMember(email, role);
+      setInvitedUrl(result);
       setEmail("");
     } catch (e) {
       setError(unwrapError(e));
@@ -68,6 +70,12 @@ export default function InviteMember() {
           </Button>
         </form>
         {error && <div className="mt-2 -mb-2 text-sm text-red-500">{error}</div>}
+        {invitedUrl && (
+          <div className="mt-2 -mb-2 text-sm text-green-700">
+            Success! You can also send them this link:
+            <div className="text-lg py-2 font-mono">{location.origin + invitedUrl}</div>
+          </div>
+        )}
       </div>
     </div>
   );
