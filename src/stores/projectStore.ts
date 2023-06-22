@@ -17,9 +17,22 @@ class ProjectStore {
     this.activeProject.set(projects[0] || null);
   };
 
+  setActiveProject = (id: string) => {
+    const project = this.projects.get().find((p) => p.id === id);
+    if (project) this.activeProject.set(project);
+  };
+
   createProject = async (params: Partial<Project>) => {
     const project = await API.projects.create(params);
     this.projects.set([...this.projects.get(), project]);
+    return project;
+  };
+
+  updateProject = async (project: Project, params: Partial<Project>) => {
+    project = await API.projects.update(project.id, params);
+    const projects = this.projects.get().map((p) => (p.id === project.id ? project : p));
+    this.projects.set(projects);
+    if (this.activeProject.get()?.id === project.id) this.activeProject.set(project);
     return project;
   };
 }

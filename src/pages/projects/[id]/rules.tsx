@@ -53,7 +53,7 @@ const IssueStatePlaceholders = {
   [IssueState.DONE]: "e.g. ask about tests & mobile support",
 };
 
-export default function Project({ id, ...props }: Props) {
+export default function ProjectRules({ id, ...props }: Props) {
   const [dirty, setDirty] = useUnsavedChanges();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -141,10 +141,7 @@ export default function Project({ id, ...props }: Props) {
 
   return (
     <Layout>
-      <Head>
-        <title>{project.name}</title>
-      </Head>
-      <PageLayout title={"Project: " + project.name} fullSize titleButtons={titleButtons}>
+      <PageLayout title={project.name + " Rules"} fullSize titleButtons={titleButtons}>
         <form onSubmit={handleSubmit} ref={formRef}>
           <h2 className="font-semibold text-xl mb-4 rounded-md py-2 px-4 -mx-4 bg-brand-200">
             Description

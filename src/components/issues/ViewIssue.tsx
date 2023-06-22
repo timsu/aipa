@@ -24,7 +24,7 @@ import IssueAssigneeMenu from "@/components/issues/IssueAssigneeMenu";
 import IssuePriorityMenu from "@/components/issues/IssuePriorityMenu";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
-  const project = useStore(projectStore.activeProject)!;
+  const project = useStore(projectStore.projects).find((p) => p.id == issue.projectId)!;
   const [editing, setEditing] = useState<boolean>(false);
   const titleRef = useRef<HTMLInputElement>(null);
 

@@ -19,7 +19,7 @@ const states = [
   IssueState.SUGGESTIONS,
 ];
 
-export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
+export default function IssueList({ emptyView }: { emptyView?: JSX.Element }) {
   const groupedIssues = useStore(issueStore.groupedIssues);
 
   useEffect(() => {
@@ -50,7 +50,10 @@ export default function IssueList({ emptyView }: { emptyView: JSX.Element }) {
     return () => window.removeEventListener("keydown", onKeyListener);
   }, [groupedIssues]);
 
-  if (!Object.keys(groupedIssues).length) return emptyView;
+  if (!Object.keys(groupedIssues).length) {
+    if (emptyView) return emptyView;
+    return <div className="text-gray-500">No issues found.</div>;
+  }
 
   return (
     <>

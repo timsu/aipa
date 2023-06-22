@@ -10,6 +10,35 @@ type WorkspaceData = {
   redirect: { redirect: Redirect } | null;
 } & WorkspaceProps;
 
+export const allWorkspaces = async (userId: string) => {
+  return await prisma.workspace.findMany({
+    where: {
+      users: {
+        some: {
+          userId,
+        },
+      },
+    },
+  });
+};
+
+export const allWorkspaceIds = async (userId: string) => {
+  return (
+    await prisma.workspace.findMany({
+      select: {
+        id: true,
+      },
+      where: {
+        users: {
+          some: {
+            userId,
+          },
+        },
+      },
+    })
+  ).map((w) => w.id);
+};
+
 export const loadWorkspaceData = async (
   context: GetServerSidePropsContext
 ): Promise<WorkspaceData> => {
@@ -27,15 +56,7 @@ export const loadWorkspaceData = async (
 
   const userId = session.user.id;
 
-  const workspaces = await prisma.workspace.findMany({
-    where: {
-      users: {
-        some: {
-          userId,
-        },
-      },
-    },
-  });
+  const workspaces = await allWorkspaces(userId);
 
   const activeWorkspaceId = session.dbUser.activeWorkspace;
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
@@ -128,21 +149,13 @@ export const allProjectsForWorkspace = (workspaceId: string, session: Session) =
 export const getProject = async (projectId: string, session: Session) => {
   if (!projectId) return null;
 
-  const workspaces = await prisma.workspace.findMany({
-    where: {
-      users: {
-        some: {
-          userId: session.user.id,
-        },
-      },
-    },
-  });
+  const workspaces = await allWorkspaceIds(session.user.id);
 
   const project = await prisma.project.findFirst({
     where: {
       id: projectId,
       workspaceId: {
-        in: workspaces.map((w) => w.id),
+        in: workspaces,
       },
       deletedAt: null,
       OR: [
