@@ -136,6 +136,8 @@ class IssueStore {
       const url = new URL(window.location.href);
       url.searchParams.set("issue", issue.identifier);
       window.history.pushState({}, "", url.toString());
+
+      if (issue.projectId) projectStore.setActiveProject(issue.projectId);
     }
   };
 

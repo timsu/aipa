@@ -111,7 +111,7 @@ export default function Sidebar() {
                       <span
                         className={classNames(
                           "text-white border-gray-200",
-                          "flex h-6 px-2 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+                          "flex h-6 w-10 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
                         )}
                         style={{ background: `#${project.color}` }}
                       >
