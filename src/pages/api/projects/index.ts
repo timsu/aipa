@@ -7,6 +7,8 @@ import Prisma, { Project, Workspace } from "@prisma/client";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiError, authApiWrapper } from "@/server/apiWrapper";
+import { sqltag } from "@prisma/client/runtime";
+import { allWorkspaceIds, allWorkspaces } from "@/server/loaders";
 
 export default authApiWrapper<Project[] | Project>(function handler(
   req: NextApiRequest,
@@ -14,16 +16,20 @@ export default authApiWrapper<Project[] | Project>(function handler(
 ) {
   if (req.method == "POST") {
     return create(session, req);
-  } else if (req.method == "PUT") {
-    return update(session, req);
   } else {
     return list(session, req);
   }
 });
 
 async function list(session: Session, req: NextApiRequest): Promise<Project[]> {
+  const workspaces = await allWorkspaceIds(session.user.id);
+
   const items = await prisma.project.findMany({
     where: {
+      workspaceId: {
+        in: workspaces,
+      },
+      deletedAt: null,
       OR: [
         { visibility: 0 },
         {
@@ -64,34 +70,4 @@ async function create(session: Session, req: NextApiRequest): Promise<Project> {
   });
 
   return result;
-}
-
-async function update(session: Session, req: NextApiRequest): Promise<Project> {
-  tracker.logEvent(session.user.email, "project-edit", { keys: Object.keys(req.body) });
-
-  const { id, ...updates } = req.body;
-
-  const item = await prisma.project.findFirst({
-    where: {
-      id: req.body.id,
-      users: {
-        some: {
-          userId: session.user.id,
-        },
-      },
-    },
-  });
-  if (!item) throw new ApiError(404, "Not found");
-
-  let result = null;
-  if (Object.keys(updates).length > 0) {
-    result = await prisma.project.update({
-      where: {
-        id: item.id,
-      },
-      data: updates,
-    });
-  }
-
-  return result || item;
 }

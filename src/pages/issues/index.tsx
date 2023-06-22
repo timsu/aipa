@@ -41,18 +41,9 @@ export default function IssuesScreen({ ...props }: Props) {
   return (
     <Layout>
       <PageLayout title="All Issues" titleButtons={headerButton}>
-        <IssuesMain />
+        <IssueList />
       </PageLayout>
     </Layout>
-  );
-}
-function IssuesMain() {
-  const emptyView = <div className="">No issues found. Create an issue to get started!</div>;
-
-  return (
-    <>
-      <IssueList emptyView={emptyView} />
-    </>
   );
 }
 

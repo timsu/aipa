@@ -24,7 +24,7 @@ import IssueAssigneeMenu from "@/components/issues/IssueAssigneeMenu";
 import IssuePriorityMenu from "@/components/issues/IssuePriorityMenu";
 
 export default function ViewIssue({ issue }: { issue: Issue }) {
-  const project = useStore(projectStore.activeProject)!;
+  const project = useStore(projectStore.projects).find((p) => p.id == issue.projectId)!;
   const [editing, setEditing] = useState<boolean>(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -95,7 +95,7 @@ export default function ViewIssue({ issue }: { issue: Issue }) {
         )}
       </div>
 
-      <div className="flex xl:gap-4 items-center mb-4 mt-2 text-sm lg:text-base">
+      <div className="flex xl:gap-4 items-center mb-4 mt-2 text-sm lg:text-base flex-wrap">
         <div className="rounded-md hover:bg-gray-100 p-2 flex gap-1 items-center cursor-pointer">
           <IssueIcon type={issue.type} />
           {titleCase(issue.type)}

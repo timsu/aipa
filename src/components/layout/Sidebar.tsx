@@ -28,6 +28,12 @@ const navigation = [
   { name: "Team", href: "/team", icon: UsersIcon },
 ];
 
+const projectNavigation = [
+  { name: "Issues", href: "/issues" },
+  { name: "Rules", href: "/rules" },
+  { name: "Settings", href: "/settings" },
+];
+
 export default function Sidebar() {
   const router = useRouter();
   const currentPath = router.asPath;
@@ -95,11 +101,9 @@ export default function Sidebar() {
                 return (
                   <li key={project.id}>
                     <Link
-                      href={href}
+                      href={href + "/issues"}
                       className={classNames(
-                        isActive
-                          ? "bg-gray-50 text-indigo-600"
-                          : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
+                        "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
                         "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                       )}
                       onClick={onLinkClick}
@@ -107,7 +111,7 @@ export default function Sidebar() {
                       <span
                         className={classNames(
                           "text-white border-gray-200",
-                          "flex h-6 px-2 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
+                          "flex h-6 w-10 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white"
                         )}
                         style={{ background: `#${project.color}` }}
                       >
@@ -115,6 +119,28 @@ export default function Sidebar() {
                       </span>
                       <span className="truncate">{project.name}</span>
                     </Link>
+
+                    {isActive &&
+                      projectNavigation.map((item) => {
+                        const itemHref = href + item.href;
+                        const isActive = currentPath.startsWith(itemHref);
+
+                        return (
+                          <Link
+                            key={item.name}
+                            href={itemHref}
+                            className={classNames(
+                              isActive
+                                ? "bg-gray-50 text-indigo-600"
+                                : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
+                              "ml-1 pl-14 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                            )}
+                            onClick={onLinkClick}
+                          >
+                            {item.name}
+                          </Link>
+                        );
+                      })}
                   </li>
                 );
               })}
