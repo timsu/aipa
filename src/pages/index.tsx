@@ -6,17 +6,17 @@ import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { ButtonLink } from "@/components/ui/Button";
 import { PRODUCT } from "@/types";
+import { SignInForm, SignInProps } from "@/pages/auth/signin";
+import { getCsrfToken, getProviders } from "next-auth/react";
 
-export default function IndexPage() {
+export default function IndexPage(props: SignInProps) {
   return (
     <AuthLayout>
       <Head>
         <title>{PRODUCT}</title>
       </Head>
-      <p>Welcome! Please sign in to continue.</p>
-      <ButtonLink href="/api/auth/signin" className="my-4">
-        Sign in
-      </ButtonLink>
+      <p>Welcome!</p>
+      <SignInForm {...props} />
     </AuthLayout>
   );
 }
@@ -24,6 +24,8 @@ export default function IndexPage() {
 // Export the `session` prop to use sessions with Server Side Rendering
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getServerSession(context.req, context.res, authOptions);
+  const providers = await getProviders();
+  const csrfToken = await getCsrfToken(context);
 
   if (session) {
     return {
@@ -35,6 +37,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   return {
-    props: {},
+    props: {
+      providers,
+      csrfToken,
+    },
   };
 }

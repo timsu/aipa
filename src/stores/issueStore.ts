@@ -25,6 +25,8 @@ class IssueStore {
 
   groupedIssues = map<IssueMap>({});
 
+  createAnother = atom<boolean>(false);
+
   // --- actions
 
   init = async () => {
@@ -72,11 +74,11 @@ class IssueStore {
   };
 
   newIssue = () => {
-    this.closeIssuePanel();
+    this.closeIssuePanel(true);
     this.activeIssue.set({} as Issue);
   };
 
-  dryRunIssue = (props: Partial<Issue> = {}, onDryRun: (issue: Issue) => Promise<void>) => {
+  dryRunIssue = (props: Partial<Issue>, onDryRun: (issue: Issue) => Promise<void>) => {
     this.closeIssuePanel();
     this.activeIssue.set({ ...props, dryRun: onDryRun } as ActiveIssue);
   };
@@ -111,8 +113,8 @@ class IssueStore {
     });
   };
 
-  closeIssuePanel = () => {
-    this.activeIssue.set(null);
+  closeIssuePanel = (skipNull?: boolean) => {
+    if (!skipNull) this.activeIssue.set(null);
     messageStore.clear();
     this.chatHistory = [];
 

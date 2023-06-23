@@ -32,7 +32,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [transitionSuccess, setTransitionSuccess] = useState<boolean | undefined>();
-  const [createAnother, setCreateAnother] = useState<boolean>(false);
+  const createAnother = useStore(issueStore.createAnother);
   const titleRef = useRef<HTMLInputElement>(null);
 
   const [issueType, setIssueType] = useState<IssueType>(ISSUE_TYPES[0]);
@@ -234,7 +234,7 @@ export default function NewIssue({ draftIssue }: { draftIssue: ActiveIssue }) {
               <Checkbox
                 id="createAnother"
                 checked={createAnother}
-                onChange={(e) => setCreateAnother(e.target.checked)}
+                onChange={(e) => issueStore.createAnother.set(e.target.checked)}
                 label="Create another?"
               />
               <div className="flex-1"></div>

@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 import { unwrapError } from "@/lib/utils";
 import { logger } from "@/lib/logger";
 
-type Props = {
+export type SignInProps = {
   email?: string;
   token?: string;
   csrfToken: string;
@@ -21,7 +21,7 @@ type Props = {
   callbackUrl?: string;
 };
 
-export default function SignInPage(props: Props) {
+export default function SignInPage(props: SignInProps) {
   return (
     <AuthLayout>
       <Head>
@@ -32,7 +32,13 @@ export default function SignInPage(props: Props) {
   );
 }
 
-export function SignInForm({ csrfToken, providers, callbackUrl, email: queryEmail, token }: Props) {
+export function SignInForm({
+  csrfToken,
+  providers,
+  callbackUrl,
+  email: queryEmail,
+  token,
+}: SignInProps) {
   const [email, setEmail] = useState(queryEmail || "");
   const oauthProviders = Object.values(providers || {}).filter((p) => p.type == "oauth");
   const [submitting, setSubmitting] = useState(false);
