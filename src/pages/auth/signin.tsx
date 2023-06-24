@@ -140,6 +140,6 @@ export const getServerSideProps = async (context: GetServerSidePropsContext) => 
     props: {
       providers: providers || {},
       csrfToken,
-    } as Props,
+    } as SignInProps,
   };
 };
