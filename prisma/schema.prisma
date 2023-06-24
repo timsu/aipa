@@ -41,7 +41,7 @@ model WorkspaceUser {
 
 model WorkspaceInvite {
   id          String    @id @default(cuid())
-  slug        String    @db.VarChar(20) @unique
+  slug        String    @unique @db.VarChar(20)
   email       String
   userId      String?
   user        User?     @relation(fields: [userId], references: [id])
