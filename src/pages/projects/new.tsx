@@ -116,10 +116,10 @@ export default function NewProject(props: Props) {
           <div>Sync with:</div>
           <Select className="border w-56">
             <option>None</option>
-            <option>Jira</option>
-            <option>Trello</option>
-            <option>Linear</option>
-            <option>GitHub Issues</option>
+            <option>Jira (coming soon)</option>
+            <option>Trello (coming soon)</option>
+            <option>Linear (coming soon)</option>
+            <option>GitHub Issues (coming soon)</option>
           </Select>
 
           <div>Color theme:</div>
