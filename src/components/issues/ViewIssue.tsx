@@ -192,7 +192,7 @@ const EditActions = ({
         <div className="flex-1"></div>
         <Button
           className="bg-transparent text-gray-700 hover:bg-gray-50"
-          data-tooltip-content="Delete this issue"
+          data-tooltip-content="Cancel Editing"
           data-tooltip-id="tooltip"
           onClick={() => setEditing(false)}
         >
@@ -225,7 +225,10 @@ const ViewActions = ({ issue }: { issue: Issue }) => {
     }
   };
 
-  const deleteIssue = () => {};
+  const deleteIssue = () => {
+    if (!confirm("Are you sure you want to delete this issue?")) return;
+    issueStore.deleteIssue(issue);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

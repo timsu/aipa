@@ -37,8 +37,10 @@ export default function PopoverMenu({
 
   useEffect(() => {
     if (!open) return;
+    console.log("wire up popper", popperElement);
     const docClickListener = (e: Event) => {
-      if (popperElement?.contains(e.target as Node)) return;
+      if (!popperElement) return;
+      if (popperElement.contains(e.target as Node)) return;
       setOpen(false);
       document.removeEventListener("click", docClickListener);
       document.removeEventListener("touchstart", docClickListener);
