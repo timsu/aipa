@@ -6,6 +6,12 @@ AIPA is an experimental platform for integrating AI assistance with project mana
 
 Create your environment file by copying `.env.example` into `.env` and filling out the fields.
 
+Install deps:
+
+```bash
+npm install
+```
+
 Run the database migrations:
 
 ```bash
